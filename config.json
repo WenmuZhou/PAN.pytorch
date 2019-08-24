@@ -21,7 +21,7 @@
             },
             "loader": {
                 "validation_split": 0.1,
-                "train_batch_size": 1,
+                "train_batch_size": 8,
                 "val_batch_size": 1,
                 "shuffle": true,
                 "pin_memory": false,
@@ -58,7 +58,7 @@
     "lr_scheduler": {
         "type": "StepLR",
         "args": {
-            "step_size": 30,
+            "step_size": 200,
             "gamma": 0.1
         }
     },
@@ -67,7 +67,7 @@
         "gpus": [
             0
         ],
-        "epochs": 100,
+        "epochs": 600,
         "display_interval": 10,
         "resume": {
             "restart_training": true,

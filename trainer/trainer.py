@@ -58,7 +58,7 @@ class Trainer(BaseTrainer):
 
             if self.tensorboard_enable:
                 # write tensorboard
-                self.writer.add_scalar('TRAIN/loss', loss_all, self.global_step)
+                self.writer.add_scalar('TRAIN/loss_all', loss_all, self.global_step)
                 self.writer.add_scalar('TRAIN/loss_tex', loss_tex, self.global_step)
                 self.writer.add_scalar('TRAIN/loss_ker', loss_ker, self.global_step)
                 self.writer.add_scalar('TRAIN/loss_agg', loss_agg, self.global_step)

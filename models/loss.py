@@ -95,7 +95,7 @@ class PANLoss(nn.Module):
             for text_idx in range(1, int(text_num)):
                 # 计算 D_p_Ki
                 single_kernel_mask = gt_kernel_i == text_idx
-                if single_kernel_mask.sum() == 0:
+                if single_kernel_mask.sum() == 0 or (gt_text_i == text_idx).sum() == 0:
                     # 这个文本被crop掉了
                     continue
                 # G_Ki, shape: 4
