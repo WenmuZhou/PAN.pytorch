@@ -34,16 +34,16 @@ def check_and_validate_polys(polys, xxx_todo_changeme):
     return np.array(validated_polys)
 
 
-def generate_rbox(im_size, text_polys, text_tags, shrink_ratio):
+def generate_rbox(im_size, text_polys, text_tags,training_mask, shrink_ratio):
     """
     生成mask图，白色部分是文本，黑色是北京
     :param im_size: 图像的h,w
     :param text_polys: 框的坐标
     :param text_tags: 标注文本框是否参与训练
+    :param training_mask: 忽略标注为 DO NOT CARE 的矩阵
     :return: 生成的mask图
     """
     h, w = im_size
-    training_mask = np.ones((h, w), dtype=np.uint8)
     score_map = np.zeros((h, w), dtype=np.uint8)
     for i, (poly, tag) in enumerate(zip(text_polys, text_tags)):
         poly = poly.astype(np.int)
@@ -97,9 +97,10 @@ def image_label(im: np.ndarray, text_polys: np.ndarray, text_tags: list, input_s
         text_polys *= scale
 
     h, w, _ = im.shape
+    training_mask = np.ones((h, w), dtype=np.uint8)
     score_maps = []
     for i in (1, shrink_ratio):
-        score_map, training_mask = generate_rbox((h, w), text_polys, text_tags, i)
+        score_map, training_mask = generate_rbox((h, w), text_polys, text_tags,training_mask, i)
         score_maps.append(score_map)
     score_maps = np.array(score_maps, dtype=np.float32)
     imgs = data_aug.random_crop([im, score_maps.transpose((1, 2, 0)), training_mask], (input_size, input_size))

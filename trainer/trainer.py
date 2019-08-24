@@ -16,13 +16,13 @@ class Trainer(BaseTrainer):
         self.train_loader = train_loader
         self.train_loader_len = len(train_loader)
         self.val_loader = val_loader
-        self.val_loader_len = len(val_loader)
+        self.val_loader_len = len(val_loader) if val_loader is not None else 0
 
         self.logger.info(
             'train dataset has {} samples,{} in dataloader, val dataset has {} samples,{} in dataloader'.format(
                 self.train_loader.dataset_len,
                 self.train_loader_len,
-                self.val_loader.dataset_len,
+                self.val_loader.dataset_len if val_loader is not None else 0,
                 self.val_loader_len))
 
     def _train_epoch(self, epoch):

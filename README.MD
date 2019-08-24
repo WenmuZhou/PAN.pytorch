@@ -11,10 +11,18 @@
 
 ## Data Preparation
 
-TBD
+prepare a text in the following format, use '\t' as a separator
+```bash
+/path/to/img.jpg path/to/label.txt
+...
+```
 
 ## Train
-TBD
+1. config the `train_data_path`,`val_data_path`in [config.json](config.json)
+2. use following script to run
+```sh
+python3 train.py
+```
 
 ## Test
 

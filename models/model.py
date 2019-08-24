@@ -43,8 +43,10 @@ class PAN(nn.Module):
         for i in range(fpem_repeat):
             self.fpems.append(FPEM(128))
         self.out_conv = nn.Conv2d(in_channels=512, out_channels=6, kernel_size=1)
+        self.name = backbone
 
     def forward(self, x):
+        _, _, H, W = x.size()
         c2, c3, c4, c5 = self.backbone(x)
         # reduce channel
         c2 = self.conv_c2(c2)
@@ -64,11 +66,12 @@ class PAN(nn.Module):
             c5_ffm += c5
 
         # FFM
-        c5 = F.interpolate(c5_ffm, c2_ffm.size()[-2:])
-        c4 = F.interpolate(c4_ffm, c2_ffm.size()[-2:])
-        c3 = F.interpolate(c3_ffm, c2_ffm.size()[-2:])
+        c5 = F.interpolate(c5_ffm, c2_ffm.size()[-2:], mode='bilinear', align_corners=True)
+        c4 = F.interpolate(c4_ffm, c2_ffm.size()[-2:], mode='bilinear', align_corners=True)
+        c3 = F.interpolate(c3_ffm, c2_ffm.size()[-2:], mode='bilinear', align_corners=True)
         Fy = torch.cat([c2_ffm, c3, c4, c5], dim=1)
         y = self.out_conv(Fy)
+        y = F.interpolate(y, size=(H, W), mode='bilinear', align_corners=True)
         return y
 
 
@@ -91,14 +94,14 @@ class FPEM(nn.Module):
 
     def forward(self, c2, c3, c4, c5):
         # up阶段
-        c4 = self.add_up(c4 + F.interpolate(c5, c4.size()[-2:]))
-        c3 = self.add_up(c3 + F.interpolate(c4, c3.size()[-2:]))
-        c2 = self.add_up(c2 + F.interpolate(c3, c2.size()[-2:]))
+        c4 = self.add_up(c4 + F.interpolate(c5, c4.size()[-2:], mode='bilinear', align_corners=True))
+        c3 = self.add_up(c3 + F.interpolate(c4, c3.size()[-2:], mode='bilinear', align_corners=True))
+        c2 = self.add_up(c2 + F.interpolate(c3, c2.size()[-2:], mode='bilinear', align_corners=True))
 
         # down 阶段
-        c3 = self.add_down(c2 + F.interpolate(c3, c2.size()[-2:]))
-        c4 = self.add_down(c3 + F.interpolate(c4, c3.size()[-2:]))
-        c5 = self.add_down(c4 + F.interpolate(c5, c4.size()[-2:]))
+        c3 = self.add_down(c2 + F.interpolate(c3, c2.size()[-2:], mode='bilinear', align_corners=True))
+        c4 = self.add_down(c3 + F.interpolate(c4, c3.size()[-2:], mode='bilinear', align_corners=True))
+        c5 = self.add_down(c4 + F.interpolate(c5, c4.size()[-2:], mode='bilinear', align_corners=True))
         return c2, c3, c4, c5
 
 

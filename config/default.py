@@ -6,7 +6,7 @@ name = 'PAN'
 arch = {
     "type": "PANModel",  # name of model architecture to train
     "args": {
-        'backbone': '',
+        'backbone': 'resnet18',
         'fpem_repeat': 2,  # fpem模块重复的次数
         'pretrained': False  # backbone 是否使用imagesnet的预训练模型
     }
@@ -23,7 +23,7 @@ data_loader = {
             'val_data_path': ['val.txt'],
             'input_size': 640,
             'img_channel': 3,
-            'shrink_ratio': '0.5'  # cv or PIL
+            'shrink_ratio': 0.5  # cv or PIL
         },
         'loader': {
             'validation_split': 0.1,

@@ -26,9 +26,9 @@ def get_datalist(train_data_path, val_data_path, validation_split=0.1):
                     line = line.strip('\n').replace('.jpg ', '.jpg\t').split('\t')
                     if len(line) > 1:
                         img_path = pathlib.Path(line[0])
-                        label_path = pathlib.Path(line[0])
+                        label_path = pathlib.Path(line[1])
                         if img_path.exists() and img_path.stat().st_size > 0 and label_path.exists() and label_path.stat().st_size > 0:
-                            train_data.append((img_path, label_path))
+                            train_data.append((str(img_path), str(label_path)))
         train_data_list.append(train_data)
 
     val_data_list = []
@@ -38,9 +38,9 @@ def get_datalist(train_data_path, val_data_path, validation_split=0.1):
                 line = line.strip('\n').replace('.jpg ', '.jpg\t').split('\t')
                 if len(line) > 1:
                     img_path = pathlib.Path(line[0])
-                    label_path = pathlib.Path(line[0])
+                    label_path = pathlib.Path(line[1])
                     if img_path.exists() and img_path.stat().st_size > 0 and label_path.exists() and label_path.stat().st_size > 0:
-                        val_data_list.append((img_path, label_path))
+                        val_data_list.append((str(img_path), str(label_path)))
 
     if len(val_data_path) == 0:
         val_len = int(len(train_data_list) * validation_split)
@@ -79,7 +79,6 @@ def get_dataloader(module_name, module_args):
 
     train_data_list, val_data_list = get_datalist(train_data_path, val_data_path,
                                                   module_args['loader']['validation_split'])
-
     train_dataset_list = []
     for train_data in train_data_list:
         train_dataset_list.append(get_dataset(data_list=train_data,
@@ -87,19 +86,29 @@ def get_dataloader(module_name, module_args):
                                               transform=train_transfroms,
                                               dataset_args=dataset_args))
 
-    val_dataset = get_dataset(data_list=val_data_list,
-                              module_name=module_name,
-                              transform=val_transfroms,
-                              dataset_args=dataset_args)
-
-    train_loader = dataset.Batch_Balanced_Dataset(dataset_list=train_dataset_list,
-                                                  ratio_list=train_data_ratio,
-                                                  module_args=module_args,
-                                                  phase='train')
-
-    val_loader = DataLoader(dataset=val_dataset,
-                            batch_size=module_args['loader']['val_batch_size'],
-                            shuffle=module_args['loader']['shuffle'],
-                            num_workers=module_args['loader']['num_workers'])
-    val_loader.dataset_len = len(val_dataset)
+    if len(train_dataset_list) > 1:
+        train_loader = dataset.Batch_Balanced_Dataset(dataset_list=train_dataset_list,
+                                                      ratio_list=train_data_ratio,
+                                                      module_args=module_args,
+                                                      phase='train')
+    elif len(train_dataset_list) == 1:
+        train_loader = DataLoader(dataset=train_dataset_list[0],
+                                  batch_size=module_args['loader']['train_batch_size'],
+                                  shuffle=module_args['loader']['shuffle'],
+                                  num_workers=module_args['loader']['num_workers'])
+        train_loader.dataset_len = len(train_dataset_list[0])
+    else:
+        raise Exception('no images found')
+    if len(val_data_list):
+        val_dataset = get_dataset(data_list=val_data_list,
+                                  module_name=module_name,
+                                  transform=val_transfroms,
+                                  dataset_args=dataset_args)
+        val_loader = DataLoader(dataset=val_dataset,
+                                batch_size=module_args['loader']['val_batch_size'],
+                                shuffle=module_args['loader']['shuffle'],
+                                num_workers=module_args['loader']['num_workers'])
+        val_loader.dataset_len = len(val_dataset)
+    else:
+        val_loader = None
     return train_loader, val_loader

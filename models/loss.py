@@ -41,9 +41,7 @@ class PANLoss(nn.Module):
         loss_texts = self.dice_loss(texts, gt_texts, selected_masks)
 
         # 计算 kernel loss
-        mask_ignore = training_masks.data.cpu().numpy()
-        selected_masks = ((gt_texts > 0.5) & (mask_ignore > 0.5)).astype('float32')
-        selected_masks = torch.from_numpy(selected_masks).float().to(outputs.device)
+        selected_masks = ((gt_texts > 0.5) & (training_masks > 0.5)).float()
 
         loss_kernels = self.dice_loss(kernels, gt_kernels, selected_masks)
 
@@ -90,26 +88,32 @@ class PANLoss(nn.Module):
         loss_diss = []
         for text_i, kernel_i, gt_text_i, gt_kernel_i, similarity_vector in zip(texts, kernels, gt_texts, gt_kernels,
                                                                                similarity_vectors):
-            text_num = text_i.max()
+            text_num = gt_text_i.max().item()
             loss_agg_single_sample = []
             G_kernel_list = []  # 存储计算好的G_Ki,用于计算loss dis
             # 求解每一个文本实例的loss agg
-            for text_idx in range(text_num):
+            for text_idx in range(1, int(text_num)):
                 # 计算 D_p_Ki
-                single_kernel_mask = kernel_i == text_idx
-                # G_Ki
-                G_kernel = similarity_vector[single_kernel_mask].sum() / single_kernel_mask.sum()  # 4
+                single_kernel_mask = gt_kernel_i == text_idx
+                if single_kernel_mask.sum() == 0:
+                    # 这个文本被crop掉了
+                    continue
+                # G_Ki, shape: 4
+                G_kernel = similarity_vector[:, single_kernel_mask].mean(1)  # 4
                 G_kernel_list.append(G_kernel)
-                # 文本像素的矩阵
-                text_similarity_vector = similarity_vector[text_i == text_idx].reshape(4, -1)  # F(p) 4 * nums
-                # ||F(p) - G(K_i)|| - delta_agg
-                text_G_ki = (text_similarity_vector - G_kernel).norm(2, dim=0) - self.delta_agg  # nums
-                # D(p,K_i)
-                D_text_kernel = torch.max(text_G_ki, torch.zeros(text_G_ki.shape)).pow(2)  # nums
-                # 计算单个文本实例的loss
+                # 文本像素的矩阵 F(p) shape: 4* nums (num of text pixel)
+                text_similarity_vector = similarity_vector[:, gt_text_i == text_idx]
+                # ||F(p) - G(K_i)|| - delta_agg, shape: nums
+                text_G_ki = (text_similarity_vector - G_kernel.reshape(4, 1)).norm(2, dim=0) - self.delta_agg
+                # D(p,K_i), shape: nums
+                D_text_kernel = torch.max(text_G_ki, torch.tensor(0, device=text_G_ki.device, dtype=torch.float)).pow(2)
+                # 计算单个文本实例的loss, shape: nums
                 loss_agg_single_text = torch.log(D_text_kernel + 1).mean()
                 loss_agg_single_sample.append(loss_agg_single_text)
-            loss_agg_single_sample = torch.stack(loss_agg_single_sample).mean()
+            if len(loss_agg_single_sample) > 0:
+                loss_agg_single_sample = torch.stack(loss_agg_single_sample).mean()
+            else:
+                loss_agg_single_sample = torch.tensor(0, device=texts.device, dtype=torch.float)
             loss_aggs.append(loss_agg_single_sample)
 
             # 求解每一个文本实例的loss dis
@@ -118,9 +122,12 @@ class PANLoss(nn.Module):
                 # delta_dis - ||G(K_i) - G(K_j)||
                 kernel_ij = self.delta_dis - (G_kernel_i - G_kernel_j).norm(2)
                 # D(K_i,K_j)
-                D_kernel_ij = torch.max(kernel_ij, torch.zeros(kernel_ij.shape)).pow(2)
+                D_kernel_ij = torch.max(kernel_ij, torch.tensor(0, device=kernel_ij.device, dtype=torch.float)).pow(2)
                 loss_dis_single_sample += torch.log(D_kernel_ij + 1)
-            loss_dis_single_sample /= (text_num * (text_num - 1))
+            if len(G_kernel_list) > 1:
+                loss_dis_single_sample /= (len(G_kernel_list) * (len(G_kernel_list) - 1))
+            else:
+                loss_dis_single_sample = torch.tensor(0, device=texts.device, dtype=torch.float)
             loss_diss.append(loss_dis_single_sample)
         return torch.stack(loss_aggs), torch.stack(loss_diss)
 

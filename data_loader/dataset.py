@@ -3,7 +3,8 @@
 # @Author  : zhoujun
 import cv2
 import numpy as np
-from torch.utils.data import Dataset
+from PIL import Image
+from torch.utils.data import Dataset, DataLoader
 from data_loader.data_utils import image_label
 
 
@@ -25,6 +26,7 @@ class ImageDataset(Dataset):
         img, score_map, training_mask = image_label(im, text_polys, text_tags, self.input_size,
                                                     self.shrink_ratio)
         # img = draw_bbox(img,text_polys)
+        img = Image.fromarray(img)
         if self.transform:
             img = self.transform(img)
         if self.target_transform:
@@ -130,12 +132,12 @@ if __name__ == '__main__':
     import torch
     from utils.util import show_img
     from tqdm import tqdm
-    from torch.utils.data import DataLoader
     import matplotlib.pyplot as plt
     from torchvision import transforms
 
     train_data = ImageDataset(
-        data_list=[(r'E:\zj\dataset\icdar2015\train\imgs\img_102.jpg', r'E:\zj\dataset\icdar2015\train\gt\gt_img_102.txt')],
+        data_list=[
+            (r'E:\zj\dataset\icdar2015\train\img\img_828.jpg', r'E:\zj\dataset\icdar2015\train\gt\gt_img_828.txt')],
         input_size=640,
         img_channel=3,
         shrink_ratio=0.5,
@@ -145,7 +147,7 @@ if __name__ == '__main__':
 
     pbar = tqdm(total=len(train_loader))
     for i, (img, label, mask) in enumerate(train_loader):
-        print(label.shape,label[0][0].max())
+        print(label.shape, label[0][0].max())
         print(img.shape)
         print(label[0][-1].sum())
         print(mask[0].shape)
