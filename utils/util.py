@@ -28,7 +28,7 @@ def setup_logger(log_file_path: str = None):
             'CRITICAL': 'red',
         })
 
-    logger = logging.getLogger('project')
+    logger = logging.getLogger('PAN')
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
     logger.addHandler(handler)

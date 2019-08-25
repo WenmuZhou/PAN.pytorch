@@ -207,6 +207,7 @@ def _resnet(arch, block, layers, pretrained, progress, **kwargs):
         state_dict = load_state_dict_from_url(model_urls[arch],
                                               progress=progress)
         model.load_state_dict(state_dict, strict=False)
+        print('load pretrained models from imagenet')
     return model
 
 

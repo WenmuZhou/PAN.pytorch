@@ -34,7 +34,7 @@
         "args": {
             "backbone": "resnet18",
             "fpem_repeat": 2,
-            "pretrained": false
+            "pretrained": true
         }
     },
     "loss": {

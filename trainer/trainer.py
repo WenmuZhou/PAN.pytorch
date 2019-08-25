@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/8/23 21:58
 # @Author  : zhoujun
-import torch
 import time
-import Levenshtein
-from tqdm import tqdm
+from utils import schedulers
+
 
 from base import BaseTrainer
 
@@ -18,6 +17,8 @@ class Trainer(BaseTrainer):
         self.val_loader = val_loader
         self.val_loader_len = len(val_loader) if val_loader is not None else 0
 
+        self.scheduler = schedulers.PolynomialLR(self.optimizer,self.epochs * self.train_loader_len)
+
         self.logger.info(
             'train dataset has {} samples,{} in dataloader, val dataset has {} samples,{} in dataloader'.format(
                 self.train_loader.dataset_len,
@@ -30,11 +31,12 @@ class Trainer(BaseTrainer):
         epoch_start = time.time()
         batch_start = time.time()
         train_loss = 0.
-        lr = self.optimizer.param_groups[0]['lr']
         for i, (images, labels, training_masks) in enumerate(self.train_loader):
             if i >= self.train_loader_len:
                 break
             self.global_step += 1
+            self.scheduler.step()
+            lr = self.optimizer.param_groups[0]['lr']
 
             # 数据进行转换和丢到gpu
             cur_batch_size = images.size()[0]
@@ -68,7 +70,7 @@ class Trainer(BaseTrainer):
             if (i + 1) % self.display_interval == 0:
                 batch_time = time.time() - batch_start
                 self.logger.info(
-                    '[{}/{}], [{}/{}], global_step: {}, Speed: {:.1f} samples/sec, loss_all: {:.4f}, loss_tex: {:.4f}, loss_ker: {:.4f}, loss_agg: {:.4f}, loss_dis: {:.4f}, lr:{}, time:{:.2f}'.format(
+                    '[{}/{}], [{}/{}], global_step: {}, Speed: {:.1f} samples/sec, loss_all: {:.4f}, loss_tex: {:.4f}, loss_ker: {:.4f}, loss_agg: {:.4f}, loss_dis: {:.4f}, lr:{:.6}, time:{:.2f}'.format(
                         epoch, self.epochs, i + 1, self.train_loader_len, self.global_step,
                                             self.display_interval * cur_batch_size / batch_time,
                         loss_all, loss_tex, loss_ker, loss_agg, loss_dis, lr, batch_time))
