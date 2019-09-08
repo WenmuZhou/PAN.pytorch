@@ -52,12 +52,12 @@ def generate_rbox(im_size, text_polys, text_tags,training_mask, shrink_ratio):
         pco.AddPath(poly, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
         shrinked_poly = np.array(pco.Execute(-d_i))
         cv2.fillPoly(score_map, shrinked_poly, i + 1)
-        if tag:
+        if not tag:
             cv2.fillPoly(training_mask, shrinked_poly, 0)
     return score_map, training_mask
 
 
-def augmentation(im: np.ndarray, text_polys: np.ndarray, scales: np.ndarray, degrees: int, input_size: int) -> tuple:
+def augmentation(im: np.ndarray, text_polys: np.ndarray, scales: np.ndarray, degrees: int) -> tuple:
     # the images are rescaled with ratio {0.5, 1.0, 2.0, 3.0} randomly
     im, text_polys = data_aug.random_scale(im, text_polys, scales)
     # the images are horizontally fliped and rotated in range [−10◦, 10◦] randomly
@@ -65,12 +65,11 @@ def augmentation(im: np.ndarray, text_polys: np.ndarray, scales: np.ndarray, deg
         im, text_polys = data_aug.horizontal_flip(im, text_polys)
     if random.random() < 0.5:
         im, text_polys = data_aug.random_rotate_img_bbox(im, text_polys, degrees)
-
     return im, text_polys
 
 
 def image_label(im: np.ndarray, text_polys: np.ndarray, text_tags: list, input_size: int = 640,
-                shrink_ratio: float = 0.5, defrees: int = 10,
+                shrink_ratio: float = 0.5, degrees: int = 10,
                 scales: np.ndarray = np.array([0.5, 1, 2.0, 3.0])) -> tuple:
     """
     读取图片并生成label
@@ -79,14 +78,14 @@ def image_label(im: np.ndarray, text_polys: np.ndarray, text_tags: list, input_s
     :param text_tags: 是否忽略文本的标致：true 忽略, false 不忽略
     :param input_size: 输出图像的尺寸
     :param shrink_ratio: gt收缩的比例
-    :param defrees: 随机旋转的角度
+    :param degrees: 随机旋转的角度
     :param scales: 随机缩放的尺度
     :return:
     """
     h, w, _ = im.shape
     # 检查越界
     text_polys = check_and_validate_polys(text_polys, (h, w))
-    # im, text_polys, = augmentation(im, text_polys, scales, defrees, input_size)
+    im, text_polys = augmentation(im, text_polys, scales, degrees)
 
     h, w, _ = im.shape
     short_edge = min(h, w)

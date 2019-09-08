@@ -28,11 +28,15 @@ class PANLoss(nn.Module):
         self.reduction = reduction
 
     def forward(self, outputs, labels, training_masks):
-        batch_size = outputs.size()[0]
         texts = outputs[:, 0, :, :]
         kernels = outputs[:, 1, :, :]
         gt_texts = labels[:, 0, :, :]
         gt_kernels = labels[:, 1, :, :]
+
+
+        # 计算 agg loss 和 dis loss
+        similarity_vectors = outputs[:, 2:, :, :]
+        loss_aggs, loss_diss = self.agg_dis_loss(texts, kernels, gt_texts, gt_kernels, similarity_vectors)
 
         # 计算 text loss
         selected_masks = self.ohem_batch(texts, gt_texts, training_masks)
@@ -41,20 +45,12 @@ class PANLoss(nn.Module):
         loss_texts = self.dice_loss(texts, gt_texts, selected_masks)
 
         # 计算 kernel loss
-        selected_masks = ((gt_texts > 0.5) & (training_masks > 0.5)).float()
-
+        # selected_masks = ((gt_texts > 0.5) & (training_masks > 0.5)).float()
+        mask0 = torch.sigmoid(texts).detach().cpu().numpy()
+        mask1 = training_masks.data.cpu().numpy()
+        selected_masks = ((mask0 > 0.5) & (mask1 > 0.5)).astype('float32')
+        selected_masks = torch.from_numpy(selected_masks).float().to(texts.device)
         loss_kernels = self.dice_loss(kernels, gt_kernels, selected_masks)
-
-        # 计算 agg loss 和 dis loss
-        similarity_vectors = outputs[:, 2:, :, :]
-
-        texts = texts.contiguous().reshape(batch_size, -1)
-        kernels = kernels.contiguous().reshape(batch_size, -1)
-        gt_texts = gt_texts.contiguous().reshape(batch_size, -1)
-        gt_kernels = gt_kernels.contiguous().reshape(batch_size, -1)
-        similarity_vectors = similarity_vectors.contiguous().view(batch_size, 4, -1)
-
-        loss_aggs, loss_diss = self.agg_dis_loss(texts, kernels, gt_texts, gt_kernels, similarity_vectors)
 
         # mean or sum
         if self.reduction == 'mean':
@@ -83,7 +79,12 @@ class PANLoss(nn.Module):
         :param similarity_vectors: 相似度向量的分割结果 batch_size * 4 *(w*h)
         :return:
         """
-
+        batch_size = texts.size()[0]
+        texts = texts.contiguous().reshape(batch_size, -1)
+        kernels = kernels.contiguous().reshape(batch_size, -1)
+        gt_texts = gt_texts.contiguous().reshape(batch_size, -1)
+        gt_kernels = gt_kernels.contiguous().reshape(batch_size, -1)
+        similarity_vectors = similarity_vectors.contiguous().view(batch_size, 4, -1)
         loss_aggs = []
         loss_diss = []
         for text_i, kernel_i, gt_text_i, gt_kernel_i, similarity_vector in zip(texts, kernels, gt_texts, gt_kernels,
@@ -133,7 +134,8 @@ class PANLoss(nn.Module):
 
     def dice_loss(self, input, target, mask):
         input = torch.sigmoid(input)
-
+        target[target <= 0.5] = 0
+        target[target > 0.5] = 1
         input = input.contiguous().view(input.size()[0], -1)
         target = target.contiguous().view(target.size()[0], -1)
         mask = mask.contiguous().view(mask.size()[0], -1)

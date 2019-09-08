@@ -53,9 +53,9 @@ class ImageDataset(Dataset):
                 try:
                     label = params[8]
                     if label == '*' or label == '###':
-                        text_tags.append(True)
-                    else:
                         text_tags.append(False)
+                    else:
+                        text_tags.append(True)
                     # if label == '*' or label == '###':
                     x1, y1, x2, y2, x3, y3, x4, y4 = list(map(float, params[:8]))
                     boxes.append([[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
@@ -135,9 +135,10 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from torchvision import transforms
 
+
     train_data = ImageDataset(
         data_list=[
-            (r'E:\zj\dataset\icdar2015\train\img\img_828.jpg', r'E:\zj\dataset\icdar2015\train\gt\gt_img_828.txt')],
+            (r'/data1/zj/ocr/icdar2015/train/img/img_713.jpg','/data1/zj/ocr/icdar2015/train/gt/gt_img_713.txt')],
         input_size=640,
         img_channel=3,
         shrink_ratio=0.5,

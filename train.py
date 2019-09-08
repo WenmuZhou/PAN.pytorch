@@ -9,7 +9,7 @@ from utils import load_json
 config = load_json('config.json')
 os.environ['CUDA_VISIBLE_DEVICES'] = ','.join([str(i) for i in config['trainer']['gpus']])
 
-from models import get_model, get_loss
+from models import get_model, get_loss, get_model_pse1
 from data_loader import get_dataloader
 from trainer import Trainer
 

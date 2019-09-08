@@ -74,7 +74,7 @@ class BaseTrainer:
         else:
             if weights_init is not None:
                 model.apply(weights_init)
-        # self.scheduler = self._initialize('lr_scheduler', torch.optim.lr_scheduler, self.optimizer)
+        self.scheduler = self._initialize('lr_scheduler', torch.optim.lr_scheduler, self.optimizer)
 
         # 单机多卡
         num_gpus = torch.cuda.device_count()
@@ -102,8 +102,8 @@ class BaseTrainer:
         """
         for epoch in range(self.start_epoch, self.epochs + 1):
             try:
+                self.scheduler.step()
                 self.epoch_result = self._train_epoch(epoch)
-
                 self._on_epoch_finish()
             except torch.cuda.CudaError:
                 self._log_memory_usage()

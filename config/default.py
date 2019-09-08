@@ -74,6 +74,7 @@ trainer = {
     'gpus': [0],
     'epochs': 100,
     'display_interval': 10,
+    'show_images_interval': 50,
     'resume': resume,
     'output_dir': 'output',
     'tensorboard': True

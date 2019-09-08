@@ -10,6 +10,7 @@ import time
 import numpy as np
 
 from models import get_model
+from pan import decode
 
 
 class Pytorch_model:
@@ -58,6 +59,12 @@ class Pytorch_model:
         with torch.no_grad():
             start = time.time()
             preds = self.net(tensor)[0]
+            preds, boxes_list = decode(preds)
+            scale = (preds.shape[1] / w, preds.shape[0] / h)
+            # print(scale)
+            # preds, boxes_list = decode(preds,num_pred=-1)
+            if len(boxes_list):
+                boxes_list = boxes_list / scale
             preds[:2] = torch.sigmoid(preds[:2])
             preds = preds.cpu().numpy()
             t = time.time() - start
@@ -69,11 +76,11 @@ if __name__ == '__main__':
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str('2')
 
-    model_path = 'output/PAN_resnet18/checkpoint/model_best.pth'
+    model_path = 'output/PAN_gt_mask_resnet50/checkpoint/model_best.pth'
 
     # model_path = 'output/psenet_icd2015_new_loss/final.pth'
     img_id = 10
-    img_path = '/data1/ocr/icdar2015/test/img/img_{}.jpg'.format(img_id)
+    img_path = '/data1/zj/ocr/icdar2015/test/img/img_{}.jpg'.format(img_id)
 
     # 初始化网络
     show_img(cv2.imread(img_path)[:,:,::-1],color=True)

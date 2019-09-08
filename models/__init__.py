@@ -2,6 +2,7 @@
 # @Time    : 2019/8/23 21:55
 # @Author  : zhoujun
 from .model import PAN
+from .model_pse1 import PSENet
 from .loss import PANLoss
 
 
@@ -11,6 +12,10 @@ def get_model(config):
     pretrained = config['arch']['args']['pretrained']
     return PAN(backbone=backbone, fpem_repeat=fpem_repeat, pretrained=pretrained)
 
+def get_model_pse1(config):
+    backbone = config['arch']['args']['backbone']
+    pretrained = config['arch']['args']['pretrained']
+    return PSENet(backbone=backbone, pretrained=pretrained)
 
 def get_loss(config):
     alpha = config['loss']['args']['alpha']
