@@ -9,7 +9,7 @@ import cv2
 import time
 
 from models import get_model
-from pan import decode_np as decode
+from pan import decode_torch as decode
 
 
 # from pan.fxw_decode import decode
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     img_path = '/data1/zj/ocr/icdar2015/test/img/img_{}.jpg'.format(img_id)
 
     # 初始化网络
-    model = Pytorch_model(model_path, gpu_id=0)
+    model = Pytorch_model(model_path, gpu_id=None)
     preds, boxes_list, t = model.predict(img_path)
     show_img(cv2.imread(img_path)[:, :, ::-1], color=True)
     show_img(preds)

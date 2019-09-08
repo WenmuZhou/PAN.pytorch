@@ -29,7 +29,13 @@ python3 train.py
 TBD
 
 ## Predict 
-TBD
+[predict.py](predict.py) is used to inference on single image
+
+1. config `model_path`, `img_path`, in [predict.py](predict.py)
+2. use following script to predict
+```sh
+python3 predict.py
+```
 
 The project is still under development.
 
