@@ -12,7 +12,7 @@ def get_dis(sv1, sv2):
 
 def pse(preds, label, label_values, dis_threshold=0.8):
     text = preds[0]
-    similarity_vectors = preds[2:]
+    similarity_vectors = preds[2:].transpose((1, 2, 0))
     pred = np.zeros(text.shape)
 
     queue = Queue(maxsize=0)
@@ -27,7 +27,7 @@ def pse(preds, label, label_values, dis_threshold=0.8):
     d = {}
     for i in label_values:
         kernel_idx = label == i
-        kernel_similarity_vector = similarity_vectors[:, kernel_idx].mean(1)  # 4
+        kernel_similarity_vector = similarity_vectors[kernel_idx].mean(0)  # 4
         d[i] = kernel_similarity_vector
 
     dx = [-1, 1, 0, 0]
@@ -43,7 +43,7 @@ def pse(preds, label, label_values, dis_threshold=0.8):
                 continue
             if kernal[tmpx, tmpy] == 0 or pred[tmpx, tmpy] > 0:
                 continue
-            if np.linalg.norm(similarity_vectors[:, x, y] - cur_kernel_sv) >= dis_threshold:
+            if np.linalg.norm(similarity_vectors[x, y] - cur_kernel_sv) >= dis_threshold:
                 continue
             queue.put((tmpx, tmpy, l))
             pred[tmpx, tmpy] = l
