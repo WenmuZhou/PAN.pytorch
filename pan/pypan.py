@@ -25,7 +25,7 @@ def decode_numpy(preds, label, label_values, dis_threshold=0.8):
 def decode_torch(preds, label, label_values, dis_threshold=0.8):
     h, w = label.shape
     label = label.reshape(-1)
-    non_text = ~preds[0].reshape(-1).byte()
+    non_text = ~preds[0].reshape(-1).bool()
     similarity_vectors = preds[2:].reshape(4, -1)
     pred = torch.zeros(non_text.shape)
     for i in label_values:
