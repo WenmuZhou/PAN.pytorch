@@ -9,7 +9,7 @@ import cv2
 import time
 
 from models import get_model
-from pan import decode_torch as decode
+from pan import decode_np as decode
 
 
 # from pan.fxw_decode import decode
@@ -75,18 +75,17 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from utils.util import show_img,draw_bbox
 
-    os.environ['CUDA_VISIBLE_DEVICES'] = str('2')
+    os.environ['CUDA_VISIBLE_DEVICES'] = str('0')
 
-    model_path = 'output/PAN_gt_mask_resnet50/checkpoint/model_best.pth'
+    model_path = 'output/PAN_pred_mask_resnet50/checkpoint/model_best.pth'
 
     img_id = 10
-    img_path = '/data1/zj/ocr/icdar2015/test/img/img_{}.jpg'.format(img_id)
+    img_path = 'E:/zj/dataset/icdar2015/test/img/img_{}.jpg'.format(img_id)
 
     # 初始化网络
     model = Pytorch_model(model_path, gpu_id=None)
     preds, boxes_list, t = model.predict(img_path)
-    show_img(cv2.imread(img_path)[:, :, ::-1], color=True)
     show_img(preds)
-    img = draw_bbox(img_path,boxes_list)
+    img = draw_bbox(cv2.imread(img_path)[:, :, ::-1],boxes_list)
     show_img(img,color=True)
     plt.show()

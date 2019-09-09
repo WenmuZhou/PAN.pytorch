@@ -6,6 +6,7 @@ import torch
 import numpy as np
 
 from .pypan import decode_torch as py_decode_torch,decode_numpy as py_decode_np
+from .pypse2 import pse
 
 
 def decode_np(preds, scale=1, threshold=0.7311, min_area=5):
@@ -32,17 +33,17 @@ def decode_np(preds, scale=1, threshold=0.7311, min_area=5):
 
     import time
     start = time.time()
-    pred = py_decode_np(preds, label, label_values)
+    pred = pse(preds, label, label_values)
     print(time.time()-start)
     bbox_list = []
     for label_value in label_values:
         points = np.array(np.where(pred == label_value)).transpose((1, 0))[:, ::-1]
 
-        if points.shape[0] < 800 / (scale * scale):
+        if points.shape[0] < 100 / (scale * scale):
             continue
 
         score_i = np.mean(score[pred == label_value])
-        if score_i < 0.93:
+        if score_i < 0.1:
             continue
 
         rect = cv2.minAreaRect(points)

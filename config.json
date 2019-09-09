@@ -7,7 +7,7 @@
             "dataset": {
                 "train_data_path": [
                     [
-                        "/data1/zj/ocr/icdar2015/train/train.txt"
+                        "E:/zj/dataset/icdar2015/train/train.txt"
                     ]
                 ],
                 "train_data_ratio": [
