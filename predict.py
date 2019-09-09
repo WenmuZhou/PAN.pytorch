@@ -12,9 +12,6 @@ from models import get_model
 from pan import decode_np as decode
 
 
-# from pan.fxw_decode import decode
-
-
 class Pytorch_model:
     def __init__(self, model_path, gpu_id=None):
         '''
