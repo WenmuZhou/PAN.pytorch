@@ -89,7 +89,7 @@ class PANLoss(nn.Module):
         loss_diss = []
         for text_i, kernel_i, gt_text_i, gt_kernel_i, similarity_vector in zip(texts, kernels, gt_texts, gt_kernels,
                                                                                similarity_vectors):
-            text_num = gt_text_i.max().item()
+            text_num = gt_text_i.max().item() + 1
             loss_agg_single_sample = []
             G_kernel_list = []  # 存储计算好的G_Ki,用于计算loss dis
             # 求解每一个文本实例的loss agg
