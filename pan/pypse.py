@@ -10,11 +10,8 @@ def get_dis(sv1, sv2):
     return np.linalg.norm(sv1 - sv2)
 
 
-def pse(preds, label, label_values, dis_threshold=0.8):
-    text = preds[0]
-    similarity_vectors = preds[2:].transpose((1, 2, 0))
+def pse(text, similarity_vectors, label, label_values, dis_threshold=0.8):
     pred = np.zeros(text.shape)
-
     queue = Queue(maxsize=0)
     points = np.array(np.where(label > 0)).transpose((1, 0))
 
