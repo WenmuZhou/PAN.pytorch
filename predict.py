@@ -37,7 +37,7 @@ class Pytorch_model:
         self.net.to(self.device)
         self.net.eval()
 
-    def predict(self, img: str, long_size: int = 2240):
+    def predict(self, img: str, short_size: int = 736):
         '''
         对传入的图像进行预测，支持图像地址,opecv 读取图片，偏慢
         :param img: 图像地址
@@ -49,7 +49,7 @@ class Pytorch_model:
         if self.img_channel == 3:
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w = img.shape[:2]
-        scale = long_size / max(h, w)
+        scale = short_size / min(h, w)
         img = cv2.resize(img, None, fx=scale, fy=scale)
         # 将图片由(w,h)变为(1,img_channel,h,w)
         tensor = transforms.ToTensor()(img)
@@ -59,7 +59,7 @@ class Pytorch_model:
         with torch.no_grad():
             start = time.time()
             preds = self.net(tensor)[0]
-            print('net time:',time.time()-start)
+            print('net time:', time.time() - start)
             preds, boxes_list = decode(preds)
             scale = (preds.shape[1] / w, preds.shape[0] / h)
             if len(boxes_list):
@@ -70,7 +70,7 @@ class Pytorch_model:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    from utils.util import show_img,draw_bbox
+    from utils.util import show_img, draw_bbox
 
     os.environ['CUDA_VISIBLE_DEVICES'] = str('0')
 
@@ -83,6 +83,6 @@ if __name__ == '__main__':
     model = Pytorch_model(model_path, gpu_id=None)
     preds, boxes_list, t = model.predict(img_path)
     show_img(preds)
-    img = draw_bbox(cv2.imread(img_path)[:, :, ::-1],boxes_list)
-    show_img(img,color=True)
+    img = draw_bbox(cv2.imread(img_path)[:, :, ::-1], boxes_list)
+    show_img(img, color=True)
     plt.show()

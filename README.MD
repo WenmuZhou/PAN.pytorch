@@ -26,7 +26,13 @@ python3 train.py
 
 ## Test
 
-TBD
+[eval.py](eval.py) is used to test model on test dataset
+
+1. config `model_path`, `img_path`, `gt_path`, `save_path` in [eval.py](eval.py)
+2. use following script to test
+```sh
+python3 eval.py
+```
 
 ## Predict 
 [predict.py](predict.py) is used to inference on single image
@@ -43,8 +49,8 @@ The project is still under development.
 
 | Method                   | Precision (%) | Recall (%) | F-measure (%) | FPS(1080Ti) |
 |--------------------------|---------------|------------|---------------|-----|
-| paper(640*640)  | 84.0 | 81.9 | 82.9 | 26.1 |
-| my implementation  | TBD | TBD | TBD | TBD |
+| paper(short_size:736)  | 84.0 | 81.9 | 82.9 | 26.1 |
+| my implementation(short_size:736)  | TBD | TBD | TBD | TBD |
 
 ### [ICDAR 2015](http://rrc.cvc.uab.es/?ch=4)
 

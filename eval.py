@@ -44,11 +44,11 @@ if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = str('2')
     scale = 4
     model_path = 'output/PAN_pred_mask_resnet50/checkpoint/model_best.pth'
-    img_folder = '/data2/dataset/ICD15/test/img'
+    img_path = '/data2/dataset/ICD15/test/img'
     gt_path = '/data2/dataset/ICD15/test/gt'
     save_path = model_path.replace('checkpoint/model_best.pt', 'result/')
     gpu_id = 0
 
-    save_path = main(model_path, img_folder, save_path, gpu_id=gpu_id)
+    save_path = main(model_path, img_path, save_path, gpu_id=gpu_id)
     result = cal_recall_precison_f1(gt_path=gt_path, result_path=save_path)
     print(result)
