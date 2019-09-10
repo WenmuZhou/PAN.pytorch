@@ -47,14 +47,12 @@ The project is still under development.
 
 <h2 id="Performance">Performance</h2>
 
+### [ICDAR 2015](http://rrc.cvc.uab.es/?ch=4)
+
 | Method                   | Precision (%) | Recall (%) | F-measure (%) | FPS(1080Ti) |
 |--------------------------|---------------|------------|---------------|-----|
 | paper(short_size:736)  | 84.0 | 81.9 | 82.9 | 26.1 |
 | my implementation(short_size:736)  | TBD | TBD | TBD | TBD |
-
-### [ICDAR 2015](http://rrc.cvc.uab.es/?ch=4)
-
-TBD
 
 ### examples
 TBD
