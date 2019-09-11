@@ -9,6 +9,7 @@ import subprocess
 import numpy as np
 
 from .pypse import pse_py
+from .kmeans import km
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
