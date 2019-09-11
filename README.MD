@@ -52,8 +52,8 @@ The project is still under development.
 | Method                   | Precision (%) | Recall (%) | F-measure (%) | FPS(1080Ti) |
 |--------------------------|---------------|------------|---------------|-----|
 | paper(short_size:736)  | 84.0 | 81.9 | 82.9 | 26.1 |
-| my implementation(short_size:736+pse扩张)  | 60.06 | 48.57 | 53.71 | 5.5 (p100)|
-| my implementation(short_size:736+聚类)  | 54.91 | 45.21 | 49.59 | 2 (p100)|
+| my implementation(short_size:736+pse扩张)  | 60.06 | 48.57 | 53.71 | 5.5 (P100)|
+| my implementation(short_size:736+聚类)  | 54.91 | 45.21 | 49.59 | 2 (P100)|
 
 ### examples
 TBD
