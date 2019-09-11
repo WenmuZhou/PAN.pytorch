@@ -35,32 +35,33 @@ namespace pan{
             throw std::runtime_error("similarity_vectors must have a shape of (h,w,4) and text must have a shape of (h,w,4)");
         //初始化结果
         std::vector<std::vector<int32_t>> res;
-        for (size_t i = 0; i<h; i++)
+        for (int i = 0; i<h; i++)
             res.push_back(std::vector<int32_t>(w, 0));
         // 获取 text similarity_vectors 和 label_map的指针
         auto ptr_label_map = static_cast<int32_t *>(pbuf_label_map.ptr);
         auto ptr_text = static_cast<uint8_t *>(pbuf_text.ptr);
-        auto ptr_similarity_vectors = static_cast<uint8_t *>(pbuf_similarity_vectors.ptr);
+        auto ptr_similarity_vectors = static_cast<float *>(pbuf_similarity_vectors.ptr);
 
         std::queue<std::tuple<int, int, int32_t>> q;
         // 计算各个kernel的similarity_vectors
         std::map<int,std::vector<float>> kernel_dict;
         std::map<int,std::vector<float>>::iterator iter;
         // 文本像素入队列
-        for (size_t i = 0; i<h; i++)
+        for (int i = 0; i<h; i++)
         {
             auto p_label_map = ptr_label_map + i*w;
-            auto p_similarity_vectors = ptr_similarity_vectors + i*w;
-            for(size_t j = 0; j<w; j++)
+            auto p_similarity_vectors = ptr_similarity_vectors + i*w*4;
+            for(int j = 0, k = 0; j<w && k < w * 4; j++,k+=4)
             {
                 int32_t label = p_label_map[j];
                 if (label>0)
                 {
                     std::vector<float> sv;
-                    sv.push_back(p_similarity_vectors[j]);
-                    sv.push_back(p_similarity_vectors[j+1]);
-                    sv.push_back(p_similarity_vectors[j+1]);
-                    sv.push_back(p_similarity_vectors[j+1]);
+                    sv.push_back(p_similarity_vectors[k]);
+                    sv.push_back(p_similarity_vectors[k+1]);
+                    sv.push_back(p_similarity_vectors[k+2]);
+                    sv.push_back(p_similarity_vectors[k+3]);
+                    sv.push_back(1);
                     iter = kernel_dict.find(label);
                     if(iter != kernel_dict.end())
                     {
@@ -69,6 +70,7 @@ namespace pan{
                         sv[1] += values[1];
                         sv[2] += values[2];
                         sv[3] += values[3];
+                        sv[4] += values[4];
                     }
                     kernel_dict[label] = sv;
                     q.push(std::make_tuple(i, j, label));
@@ -79,9 +81,9 @@ namespace pan{
 
         for (auto& it : kernel_dict)
         {
-            for (int i = 0;i<it.second.size();i++)
+            for (size_t i = 0;i<it.second.size() - 1;i++)
             {
-                it.second[i] /= it.second.size();
+                it.second[i] /= it.second[4];
             }
         }
 
@@ -106,10 +108,10 @@ namespace pan{
                     continue;
                 // 计算距离
                 float dis = 0;
-                auto p_similarity_vectors = ptr_similarity_vectors + tmpx * w;
-                for(int i=0;i<kernel_cv.size();i++)
+                auto p_similarity_vectors = ptr_similarity_vectors + tmpy * w*4;
+                for(size_t i=0;i<kernel_cv.size()-1;i++)
                 {
-                    dis += pow(kernel_cv[i] - p_similarity_vectors[tmpy + i],2);
+                    dis += pow(kernel_cv[i] - p_similarity_vectors[tmpx*4 + i],2);
                 }
                 dis = sqrt(dis);
                 if(dis >= dis_threshold)

@@ -8,7 +8,7 @@ import time
 import subprocess
 import numpy as np
 
-from .pypse import pse
+from .pypse import pse_py
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
