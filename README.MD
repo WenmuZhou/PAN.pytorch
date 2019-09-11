@@ -52,7 +52,7 @@ The project is still under development.
 | Method                   | Precision (%) | Recall (%) | F-measure (%) | FPS(1080Ti) |
 |--------------------------|---------------|------------|---------------|-----|
 | paper(short_size:736)  | 84.0 | 81.9 | 82.9 | 26.1 |
-| my implementation(short_size:736)  | TBD | TBD | TBD | TBD |
+| my implementation(short_size:736)  | 53.37 | 45.69 | 49.23 | 5.5 (p100)|
 
 ### examples
 TBD
