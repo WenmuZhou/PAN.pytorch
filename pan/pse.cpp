@@ -16,11 +16,10 @@
 namespace py = pybind11;
 
 namespace pan{
-    std::vector<std::vector<int32_t>> pse(
+    py::array_t<uint8_t> pse(
     py::array_t<uint8_t, py::array::c_style> text,
     py::array_t<float, py::array::c_style> similarity_vectors,
     py::array_t<int32_t, py::array::c_style> label_map,
-    std::vector<int>& label_values,
     float dis_threshold = 0.8)
     {
         auto pbuf_text = text.request();
@@ -34,13 +33,13 @@ namespace pan{
             pbuf_text.shape[0]!=h || pbuf_text.shape[1]!=w)
             throw std::runtime_error("similarity_vectors must have a shape of (h,w,4) and text must have a shape of (h,w,4)");
         //初始化结果
-        std::vector<std::vector<int32_t>> res;
-        for (int i = 0; i<h; i++)
-            res.push_back(std::vector<int32_t>(w, 0));
+        auto res = py::array_t<uint8_t>(pbuf_text.size);
+        auto pbuf_res = res.request();
         // 获取 text similarity_vectors 和 label_map的指针
         auto ptr_label_map = static_cast<int32_t *>(pbuf_label_map.ptr);
         auto ptr_text = static_cast<uint8_t *>(pbuf_text.ptr);
         auto ptr_similarity_vectors = static_cast<float *>(pbuf_similarity_vectors.ptr);
+        auto ptr_res = static_cast<uint8_t *>(pbuf_res.ptr);
 
         std::queue<std::tuple<int, int, int32_t>> q;
         // 计算各个kernel的similarity_vectors
@@ -50,6 +49,7 @@ namespace pan{
         for (int i = 0; i<h; i++)
         {
             auto p_label_map = ptr_label_map + i*w;
+            auto p_res = ptr_res + i*w;
             auto p_similarity_vectors = ptr_similarity_vectors + i*w*4;
             for(int j = 0, k = 0; j<w && k < w * 4; j++,k+=4)
             {
@@ -74,8 +74,8 @@ namespace pan{
                     }
                     kernel_dict[label] = sv;
                     q.push(std::make_tuple(i, j, label));
-                    res[i][j] = label;
                 }
+                p_res[j] = label;
             }
         }
 
@@ -102,9 +102,10 @@ namespace pan{
             {
                 int tmpy = y + dy[idx];
                 int tmpx = x + dx[idx];
+                auto p_res = ptr_res + tmpy*w;
                 if (tmpy<0 || tmpy>=h || tmpx<0 || tmpx>=w)
                     continue;
-                if (!ptr_text[tmpy*w+tmpx] || res[tmpy][tmpx]>0)
+                if (!ptr_text[tmpy*w+tmpx] || p_res[tmpx]>0)
                     continue;
                 // 计算距离
                 float dis = 0;
@@ -117,7 +118,7 @@ namespace pan{
                 if(dis >= dis_threshold)
                     continue;
                 q.push(std::make_tuple(tmpy, tmpx, l));
-                res[tmpy][tmpx]=l;
+                p_res[tmpx]=l;
             }
         }
         return res;
@@ -125,6 +126,6 @@ namespace pan{
 }
 
 PYBIND11_MODULE(pse, m){
-    m.def("pse_cpp", &pan::pse, " re-implementation pse algorithm(cpp)", py::arg("text"), py::arg("similarity_vectors"), py::arg("label_map"), py::arg("label_values"), py::arg("dis_threshold")=0.8);
+    m.def("pse_cpp", &pan::pse, " re-implementation pse algorithm(cpp)", py::arg("text"), py::arg("similarity_vectors"), py::arg("label_map"), py::arg("dis_threshold")=0.8);
 }
 

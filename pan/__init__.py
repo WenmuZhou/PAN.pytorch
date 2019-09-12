@@ -24,14 +24,15 @@ def decode_np(preds, scale=1, threshold=0.7311, min_area=5):
     :param threshold: sigmoid的阈值
     :return: 最后的输出图和文本框
     """
-    from pse import pse_cpp
+    from .pse import pse_cpp
     preds[:2, :, :] = torch.sigmoid(preds[:2, :, :])
     preds = preds.detach().cpu().numpy()
     score = preds[0].astype(np.float32)
-    preds[0] = preds[0] > threshold  # text
-    preds[1] = (preds[1] > threshold) * preds[0]  # kernel
+    text = preds[0] > threshold  # text
+    kernel = (preds[1] > threshold) * text  # kernel
+    similarity_vectors =  preds[2:].transpose((1, 2, 0))
 
-    label_num, label = cv2.connectedComponents(preds[1].astype(np.uint8), connectivity=4)
+    label_num, label = cv2.connectedComponents(kernel.astype(np.uint8), connectivity=4)
     label_values = []
     for label_idx in range(1, label_num):
         if np.sum(label == label_idx) < min_area:
@@ -40,8 +41,8 @@ def decode_np(preds, scale=1, threshold=0.7311, min_area=5):
         label_values.append(label_idx)
 
     start = time.time()
-    pred = pse_cpp(preds[0].astype(np.uint8), preds[2:].transpose((1, 2, 0)), label, label_values)
-    pred = np.array(pred)
+    pred = pse_cpp(text.astype(np.uint8),similarity_vectors, label)
+    pred = pred.reshape(text.shape)
     print(time.time() - start)
     bbox_list = []
     for label_value in label_values:

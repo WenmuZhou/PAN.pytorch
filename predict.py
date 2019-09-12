@@ -57,6 +57,7 @@ class Pytorch_model:
 
         tensor = tensor.to(self.device)
         with torch.no_grad():
+            torch.cuda.synchronize(self.device)
             start = time.time()
             preds = self.net(tensor)[0]
             print('net time:', time.time() - start)
@@ -64,6 +65,7 @@ class Pytorch_model:
             scale = (preds.shape[1] / w, preds.shape[0] / h)
             if len(boxes_list):
                 boxes_list = boxes_list / scale
+            torch.cuda.synchronize(self.device)
             t = time.time() - start
         return preds, boxes_list, t
 
