@@ -9,7 +9,7 @@ import cv2
 import time
 
 from models import get_model
-from pan import decode_np as decode
+from post_processing import decode_np as decode
 
 
 class Pytorch_model:
