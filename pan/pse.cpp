@@ -1,8 +1,7 @@
 //
 //  pse
-//  reference https://github.com/whai362/PSENet/issues/15
-//  Created by liuheng on 11/3/19.
-//  Copyright © 2019年 liuheng. All rights reserved.
+//  Created by zhoujun on 11/9/19.
+//  Copyright © 2019年 zhoujun. All rights reserved.
 //
 #include <queue>
 #include <math.h>
