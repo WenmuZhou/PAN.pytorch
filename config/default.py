@@ -8,7 +8,8 @@ arch = {
     "args": {
         'backbone': 'resnet18',
         'fpem_repeat': 2,  # fpem模块重复的次数
-        'pretrained': False  # backbone 是否使用imagesnet的预训练模型
+        'pretrained': False,  # backbone 是否使用imagesnet的预训练模型
+        'segmentation_head': 'FPN' #分割头，FPN or FPEM_FFM
     }
 }
 

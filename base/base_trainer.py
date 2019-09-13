@@ -22,6 +22,7 @@ class BaseTrainer:
     def __init__(self, config, model, criterion, weights_init):
         config['trainer']['output_dir'] = os.path.join(str(pathlib.Path(os.path.abspath(__name__)).parent),
                                                        config['trainer']['output_dir'])
+        config['name'] = config['name'] + '_' + model.name
         save_dir = os.path.join(config['trainer']['output_dir'], config['name'])
         self.checkpoint_dir = os.path.join(config['trainer']['output_dir'], config['name'], 'checkpoint')
 
