@@ -50,7 +50,7 @@ The project is still under development.
 ### [ICDAR 2015](http://rrc.cvc.uab.es/?ch=4)
 only train on ICDAR2015 dataset
 
-| Method                   | image size(short size) |Precision (%) | Recall (%) | F-measure (%) | FPS |
+| Method                   | image size (short size) |Precision (%) | Recall (%) | F-measure (%) | FPS |
 |--------------------------|-------|--------|------------|---------------|-----|
 | paper(resnet18)  | 736 | x | x | 80.4 | 26.1 |
 | my (resnet50+FPEM_FFM+pse扩张)  |736 | 60.06 | 48.57 | 53.71 | 12.18 (P100)|
