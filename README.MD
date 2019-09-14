@@ -48,14 +48,14 @@ The project is still under development.
 <h2 id="Performance">Performance</h2>
 
 ### [ICDAR 2015](http://rrc.cvc.uab.es/?ch=4)
-only train on ICDAR2015 dataset 
+only train on ICDAR2015 dataset
 
-| Method                   | Precision (%) | Recall (%) | F-measure (%) | FPS |
-|--------------------------|---------------|------------|---------------|-----|
-| paper(resnet18+short_size:736)  | x | x | 80.4 | 26.1 |
-| my implementation(resnet50+short_size:736+pse扩张)  | 60.06 | 48.57 | 53.71 | 12.18 (P100)|
-| my implementation(resnet50+short_size:736+聚类)  | 54.91 | 45.21 | 49.59 | 1.44 (P100)|
-| my implementation(psenet+resnet50+short_size:736+pse扩张)  | 76.9 | 78.57 | 77.73 | 8.79 (P100)|
+| Method                   | image size(short size) |Precision (%) | Recall (%) | F-measure (%) | FPS |
+|--------------------------|-------|--------|------------|---------------|-----|
+| paper(resnet18)  | 736 | x | x | 80.4 | 26.1 |
+| my (resnet50+FPEM_FFM+pse扩张)  |736 | 60.06 | 48.57 | 53.71 | 12.18 (P100)|
+| my (resnet50+FPEM_FFM+聚类)  |736 | 54.91 | 45.21 | 49.59 | 1.44 (P100)|
+| my (resnet50+FPN+pse扩张)  |736 | 76.9 | 78.57 | 77.73 | 8.79 (P100)|
 
 ### examples
 TBD
