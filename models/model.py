@@ -31,9 +31,9 @@ class Model(nn.Module):
         :param model_config: 模型配置
         """
         super().__init__()
-        backbone = model_config.pop('backbone')
-        pretrained = model_config.pop('pretrained')
-        segmentation_head = model_config.pop('segmentation_head')
+        backbone = model_config['backbone']
+        pretrained = model_config['pretrained']
+        segmentation_head = model_config['segmentation_head']
 
         assert backbone in backbone_dict, 'backbone must in: {}'.format(backbone_dict)
         assert segmentation_head in segmentation_head_dict, 'segmentation_head must in: {}'.format(
