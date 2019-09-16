@@ -4,16 +4,15 @@
 
 from torch.utils.data import DataLoader
 from torchvision import transforms
-import random
+import copy
 import pathlib
 from . import dataset
 
 
-def get_datalist(train_data_path, val_data_path, validation_split=0.1):
+def get_datalist(train_data_path, validation_split=0.1):
     """
     获取训练和验证的数据list
     :param train_data_path: 训练的dataset文件列表，每个文件内以如下格式存储 ‘path/to/img\tlabel’
-    :param val_data_path: 验证的dataset文件列表，每个文件内以如下格式存储 ‘path/to/img\tlabel’
     :param validation_split: 验证集的比例，当val_data_path为空时使用
     :return:
     """
@@ -30,24 +29,7 @@ def get_datalist(train_data_path, val_data_path, validation_split=0.1):
                         if img_path.exists() and img_path.stat().st_size > 0 and label_path.exists() and label_path.stat().st_size > 0:
                             train_data.append((str(img_path), str(label_path)))
         train_data_list.append(train_data)
-
-    val_data_list = []
-    for p in val_data_path:
-        with open(p, 'r', encoding='utf-8') as f:
-            for line in f.readlines():
-                line = line.strip('\n').replace('.jpg ', '.jpg\t').split('\t')
-                if len(line) > 1:
-                    img_path = pathlib.Path(line[0])
-                    label_path = pathlib.Path(line[1])
-                    if img_path.exists() and img_path.stat().st_size > 0 and label_path.exists() and label_path.stat().st_size > 0:
-                        val_data_list.append((str(img_path), str(label_path)))
-
-    if len(val_data_path) == 0:
-        val_len = int(len(train_data_list) * validation_split)
-        random.shuffle(train_data_list)
-        val_data_list = train_data_list[:val_len]
-        train_data_list = train_data_list[val_len:]
-    return train_data_list, val_data_list
+    return train_data_list
 
 
 def get_dataset(data_list, module_name, transform, dataset_args):
@@ -69,16 +51,13 @@ def get_dataloader(module_name, module_args):
         transforms.ColorJitter(brightness=0.5),
         transforms.ToTensor()
     ])
-    val_transfroms = transforms.ToTensor()
 
     # 创建数据集
-    dataset_args = module_args['dataset']
+    dataset_args = copy.deepcopy(module_args['dataset'])
     train_data_path = dataset_args.pop('train_data_path')
     train_data_ratio = dataset_args.pop('train_data_ratio')
-    val_data_path = dataset_args.pop('val_data_path')
-
-    train_data_list, val_data_list = get_datalist(train_data_path, val_data_path,
-                                                  module_args['loader']['validation_split'])
+    dataset_args.pop('val_data_path')
+    train_data_list = get_datalist(train_data_path, module_args['loader']['validation_split'])
     train_dataset_list = []
     for train_data in train_data_list:
         train_dataset_list.append(get_dataset(data_list=train_data,
@@ -99,16 +78,4 @@ def get_dataloader(module_name, module_args):
         train_loader.dataset_len = len(train_dataset_list[0])
     else:
         raise Exception('no images found')
-    if len(val_data_list):
-        val_dataset = get_dataset(data_list=val_data_list,
-                                  module_name=module_name,
-                                  transform=val_transfroms,
-                                  dataset_args=dataset_args)
-        val_loader = DataLoader(dataset=val_dataset,
-                                batch_size=module_args['loader']['val_batch_size'],
-                                shuffle=module_args['loader']['shuffle'],
-                                num_workers=module_args['loader']['num_workers'])
-        val_loader.dataset_len = len(val_dataset)
-    else:
-        val_loader = None
-    return train_loader, val_loader
+    return train_loader

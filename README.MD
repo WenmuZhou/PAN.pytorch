@@ -11,10 +11,16 @@
 
 ## Data Preparation
 
-prepare a text in the following format, use '\t' as a separator
+train: prepare a text in the following format, use '\t' as a separator
 ```bash
 /path/to/img.jpg path/to/label.txt
 ...
+```
+val:
+use a folder
+```bash
+img/ store img
+gt/ store gt file
 ```
 
 ## Train

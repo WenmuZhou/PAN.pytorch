@@ -15,7 +15,7 @@ from trainer import Trainer
 
 
 def main(config):
-    train_loader, eval_loader = get_dataloader(config['data_loader']['type'], config['data_loader']['args'])
+    train_loader = get_dataloader(config['data_loader']['type'], config['data_loader']['args'])
 
     criterion = get_loss(config).cuda()
 

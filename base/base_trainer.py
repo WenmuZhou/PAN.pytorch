@@ -12,22 +12,16 @@ from torch import nn
 from utils import setup_logger
 
 
-class TRAIN_STATE:
-    def __init__(self):
-        self.epoch = 0
-        self.lr = 0
-
-
 class BaseTrainer:
     def __init__(self, config, model, criterion, weights_init):
         config['trainer']['output_dir'] = os.path.join(str(pathlib.Path(os.path.abspath(__name__)).parent),
                                                        config['trainer']['output_dir'])
         config['name'] = config['name'] + '_' + model.name
-        save_dir = os.path.join(config['trainer']['output_dir'], config['name'])
-        self.checkpoint_dir = os.path.join(config['trainer']['output_dir'], config['name'], 'checkpoint')
+        self.save_dir = os.path.join(config['trainer']['output_dir'], config['name'])
+        self.checkpoint_dir = os.path.join(self.save_dir, 'checkpoint')
 
         if config['trainer']['resume']['restart_training']:
-            shutil.rmtree(save_dir, ignore_errors=True)
+            shutil.rmtree(self.save_dir, ignore_errors=True)
         if not os.path.exists(self.checkpoint_dir):
             os.makedirs(self.checkpoint_dir)
 
@@ -43,9 +37,9 @@ class BaseTrainer:
         self.display_interval = self.config['trainer']['display_interval']
         if self.tensorboard_enable:
             from torch.utils.tensorboard import SummaryWriter
-            self.writer = SummaryWriter(save_dir)
+            self.writer = SummaryWriter(self.save_dir)
 
-        self.logger = setup_logger(os.path.join(save_dir, 'train_log'))
+        self.logger = setup_logger(os.path.join(self.save_dir, 'train_log'))
         self.logger.info(pformat(self.config))
 
         # device set
@@ -64,7 +58,7 @@ class BaseTrainer:
             self.logger.info('train with cpu and pytorch {}'.format(torch.__version__))
             self.device = torch.device("cpu")
         self.logger.info('device {}'.format(self.device))
-        self.metrics = {'val_acc': 0, 'train_loss': float('inf'), 'best_model': ''}
+        self.metrics = {'recall': 0, 'precision': 0, 'hmean': 0, 'train_loss': float('inf'), 'best_model': ''}
 
         self.optimizer = self._initialize('optimizer', torch.optim, model.parameters())
 
