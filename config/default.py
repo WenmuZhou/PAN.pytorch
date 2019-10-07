@@ -8,7 +8,7 @@ arch = {
     "args": {
         'backbone': 'resnet18',
         'fpem_repeat': 2,  # fpem模块重复的次数
-        'pretrained': False,  # backbone 是否使用imagesnet的预训练模型
+        'pretrained': True,  # backbone 是否使用imagesnet的预训练模型
         'segmentation_head': 'FPN' #分割头，FPN or FPEM_FFM
     }
 }
@@ -17,11 +17,10 @@ arch = {
 data_loader = {
     "type": "ImageDataset",  # selecting data loader
     "args": {
-        'alphabet': 'alphabet.npy',
         'dataset': {
             'train_data_path': [['dataset1.txt1', 'dataset1.txt2'], ['dataset2.txt1', 'dataset2.txt2']],
             'train_data_ratio': [0.5, 0.5],
-            'val_data_path': ['val.txt'],
+            'val_data_path': ['path/to/test/'],
             'input_size': 640,
             'img_channel': 3,
             'shrink_ratio': 0.5  # cv or PIL
@@ -59,7 +58,7 @@ optimizer = {
 lr_scheduler = {
     "type": "StepLR",
     "args": {
-        "step_size": 30,
+        "step_size": 200,
         "gamma": 0.1
     }
 }
@@ -73,7 +72,7 @@ trainer = {
     # random seed
     'seed': 2,
     'gpus': [0],
-    'epochs': 100,
+    'epochs': 600,
     'display_interval': 10,
     'show_images_interval': 50,
     'resume': resume,

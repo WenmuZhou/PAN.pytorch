@@ -62,14 +62,13 @@ class BaseTrainer:
 
         self.optimizer = self._initialize('optimizer', torch.optim, model.parameters())
 
-        if self.config['trainer']['resume']['checkpoint'] != '' and not self.config['trainer']['resume'][
-            'restart_training']:
+        if self.config['trainer']['resume']['checkpoint'] != '':
             self._resume_checkpoint(self.config['trainer']['resume']['checkpoint'])
-            self.config['lr_scheduler']['args']['last_epoch'] = self.start_epoch
         else:
             if weights_init is not None:
                 model.apply(weights_init)
-        self.scheduler = self._initialize('lr_scheduler', torch.optim.lr_scheduler, self.optimizer)
+        if self.config['lr_scheduler']['type'] != 'PolynomialLR':
+            self.scheduler = self._initialize('lr_scheduler', torch.optim.lr_scheduler, self.optimizer)
 
         # 单机多卡
         num_gpus = torch.cuda.device_count()
@@ -98,7 +97,8 @@ class BaseTrainer:
         for epoch in range(self.start_epoch, self.epochs + 1):
             try:
                 self.epoch_result = self._train_epoch(epoch)
-                self.scheduler.step()
+                if self.config['lr_scheduler']['type'] != 'PolynomialLR':
+                    self.scheduler.step()
                 self._on_epoch_finish()
             except torch.cuda.CudaError:
                 self._log_memory_usage()
@@ -178,18 +178,20 @@ class BaseTrainer:
         """
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path)
-        self.start_epoch = checkpoint['epoch'] + 1
-        self.global_step = checkpoint['global_step']
         self.model.load_state_dict(checkpoint['state_dict'])
-        # self.scheduler.load_state_dict(checkpoint['scheduler'])
-        self.optimizer.load_state_dict(checkpoint['optimizer'])
-        if 'metrics' in checkpoint:
-            self.metrics = checkpoint['metrics']
-        if self.with_cuda:
-            for state in self.optimizer.state.values():
-                for k, v in state.items():
-                    if isinstance(v, torch.Tensor):
-                        state[k] = v.to(self.device)
+        if not self.config['trainer']['resume']['restart_training']:
+            self.global_step = checkpoint['global_step']
+            self.start_epoch = checkpoint['epoch'] + 1
+            self.config['lr_scheduler']['args']['last_epoch'] = self.start_epoch
+            # self.scheduler.load_state_dict(checkpoint['scheduler'])
+            self.optimizer.load_state_dict(checkpoint['optimizer'])
+            if 'metrics' in checkpoint:
+                self.metrics = checkpoint['metrics']
+            if self.with_cuda:
+                for state in self.optimizer.state.values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            state[k] = v.to(self.device)
         # self.config = checkpoint['config']
         self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
 

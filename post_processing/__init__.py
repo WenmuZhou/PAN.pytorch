@@ -40,10 +40,8 @@ def decode_np(preds, scale=1, threshold=0.7311, min_area=5):
             continue
         label_values.append(label_idx)
 
-    start = time.time()
     pred = pse_cpp(text.astype(np.uint8),similarity_vectors, label)
     pred = pred.reshape(text.shape)
-    print(time.time() - start)
     bbox_list = []
     for label_value in label_values:
         points = np.array(np.where(pred == label_value)).transpose((1, 0))[:, ::-1]

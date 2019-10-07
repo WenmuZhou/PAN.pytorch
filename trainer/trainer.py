@@ -24,8 +24,8 @@ class Trainer(BaseTrainer):
         self.test_path = self.config['data_loader']['args']['dataset']['val_data_path']
         self.train_loader = train_loader
         self.train_loader_len = len(train_loader)
-
-        # self.scheduler = PolynomialLR(self.optimizer, self.epochs * self.train_loader_len)
+        if self.config['lr_scheduler']['type'] == 'PolynomialLR':
+            self.scheduler = PolynomialLR(self.optimizer, self.epochs * self.train_loader_len)
 
         self.logger.info('train dataset has {} samples,{} in dataloader'.format(self.train_loader.dataset_len,
                                                                                 self.train_loader_len))
@@ -54,6 +54,8 @@ class Trainer(BaseTrainer):
             self.optimizer.zero_grad()
             loss_all.backward()
             self.optimizer.step()
+            if self.config['lr_scheduler']['type'] == 'PolynomialLR':
+                self.scheduler.step()
             # acc iou
             score_text = cal_text_score(preds[:, 0, :, :], labels[:, 0, :, :], training_masks, running_metric_text)
             score_kernel = cal_kernel_score(preds[:, 1, :, :], labels[:, 1, :, :], labels[:, 0, :, :], training_masks,
@@ -179,6 +181,7 @@ class Trainer(BaseTrainer):
                                                                                           hmean)
             if hmean > self.metrics['hmean']:
                 save_best = True
+                self.metrics['train_loss'] = self.metrics['train_loss']
                 self.metrics['hmean'] = hmean
                 self.metrics['precision'] = precision
                 self.metrics['recall'] = recall

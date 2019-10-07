@@ -56,12 +56,17 @@ The project is still under development.
 ### [ICDAR 2015](http://rrc.cvc.uab.es/?ch=4)
 only train on ICDAR2015 dataset
 
-| Method                   | image size (short size) |Precision (%) | Recall (%) | F-measure (%) | FPS |
-|--------------------------|-------|--------|------------|---------------|-----|
+| Method                   | image size (short size) |learning rate | Precision (%) | Recall (%) | F-measure (%) | FPS |
+|--------------------------|-------|--------|--------|------------|---------------|-----|
 | paper(resnet18)  | 736 | x | x | 80.4 | 26.1 |
-| my (resnet50+FPEM_FFM+pse扩张)  |736 | 60.06 | 48.57 | 53.71 | 12.18 (P100)|
-| my (resnet50+FPEM_FFM+聚类)  |736 | 54.91 | 45.21 | 49.59 | 1.44 (P100)|
-| my (resnet50+FPN+pse扩张)  |736 | 76.9 | 78.57 | 77.73 | 8.79 (P100)|
+| my (resnet18+FPEM_FFM+pse扩张)  |736 |1e-3| 73.17 | 70.39 | 71.75 | 15.85 (P100)|
+| my (resnet50+FPEM_FFM+pse扩张)  |736 |1e-3| 69.04 | 66.66 | 67.83 | 10.51 (P100)|
+| my (resnet18+FPEM_FFM+pse扩张)  |736 |1e-4| 62.93 | 62.41 | 62.61 | 15.85 (P100)|
+| my (resnet50+FPEM_FFM+pse扩张)  |736 |1e-4| 61.19 | 69.18 | 64.94 | 10.51 (P100)|
+| my (resnet18+FPN+pse扩张)  | 736 |1e-3|  76.50 | 74.70 | 75.59 | 10.81 (P100)|
+| my (resnet50+FPN+pse扩张)  | 736 |1e-3|  71.82 | 75.73 | 73.72 | 8.62 (P100)|
+| my (resnet18+FPN+pse扩张)  | 736 |1e-4|  74.19 | 72.34 | 73.25 | 10.81 (P100)|
+| my (resnet50+FPN+pse扩张)  | 736 |1e-4|  78.96 | 76.27 | 77.59 | 8.62 (P100)|
 
 ### examples
 TBD
