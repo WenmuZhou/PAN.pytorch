@@ -58,7 +58,7 @@ only train on ICDAR2015 dataset
 
 | Method                   | image size (short size) |learning rate | Precision (%) | Recall (%) | F-measure (%) | FPS |
 |--------------------------|-------|--------|--------|------------|---------------|-----|
-| paper(resnet18)  | 736 | x | x | 80.4 | 26.1 |
+| paper(resnet18)  | 736 |x | x | x | 80.4 | 26.1 |
 | my (resnet18+FPEM_FFM+pse扩张)  |736 |1e-3| 73.17 | 70.39 | 71.75 | 21.31 (P100)|
 | my (resnet50+FPEM_FFM+pse扩张)  |736 |1e-3| 69.04 | 66.66 | 67.83 | 14.22 (P100)|
 | my (resnet18+FPEM_FFM+pse扩张)  |736 |1e-4| 62.93 | 62.41 | 62.61 | 21.31 (P100)|
