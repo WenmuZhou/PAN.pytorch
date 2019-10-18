@@ -68,7 +68,7 @@ def show_img(imgs: np.ndarray, color=False):
         plt.imshow(img, cmap=None if color else 'gray')
 
 
-def draw_bbox(img_path, result, color=(255, 0, 0),thickness=2):
+def draw_bbox(img_path, result, color=(255, 0, 0), thickness=2):
     if isinstance(img_path, str):
         img_path = cv2.imread(img_path)
         # img_path = cv2.cvtColor(img_path, cv2.COLOR_BGR2RGB)
@@ -81,11 +81,12 @@ def draw_bbox(img_path, result, color=(255, 0, 0),thickness=2):
         cv2.line(img_path, tuple(point[3]), tuple(point[0]), color, thickness)
     return img_path
 
+
 def cal_text_score(texts, gt_texts, training_masks, running_metric_text):
     training_masks = training_masks.data.cpu().numpy()
     pred_text = torch.sigmoid(texts).data.cpu().numpy() * training_masks
     pred_text[pred_text <= 0.5] = 0
-    pred_text[pred_text >  0.5] = 1
+    pred_text[pred_text > 0.5] = 1
     pred_text = pred_text.astype(np.int32)
     gt_text = gt_texts.data.cpu().numpy() * training_masks
     gt_text = gt_text.astype(np.int32)
@@ -93,14 +94,45 @@ def cal_text_score(texts, gt_texts, training_masks, running_metric_text):
     score_text, _ = running_metric_text.get_scores()
     return score_text
 
+
 def cal_kernel_score(kernel, gt_kernel, gt_texts, training_masks, running_metric_kernel):
     mask = (gt_texts * training_masks.float()).data.cpu().numpy()
     pred_kernel = torch.sigmoid(kernel).data.cpu().numpy()
     pred_kernel[pred_kernel <= 0.5] = 0
-    pred_kernel[pred_kernel >  0.5] = 1
+    pred_kernel[pred_kernel > 0.5] = 1
     pred_kernel = (pred_kernel * mask).astype(np.int32)
     gt_kernel = gt_kernel.data.cpu().numpy()
     gt_kernel = (gt_kernel * mask).astype(np.int32)
     running_metric_kernel.update(gt_kernel, pred_kernel)
     score_kernel, _ = running_metric_kernel.get_scores()
     return score_kernel
+
+
+def order_points_colckwise(pts):
+    rect = np.zeros((4, 2), dtype="float32")
+    s = pts.sum(axis=1)
+    rect[0] = pts[np.argmin(s)]
+    rect[2] = pts[np.argmax(s)]
+    diff = np.diff(pts, axis=1)
+    rect[1] = pts[np.argmin(diff)]
+    rect[3] = pts[np.argmax(diff)]
+    return rect
+
+
+def order_points_colckwise_list(pts):
+    pts = pts.tolist()
+    pts.sort(key=lambda x: (x[1], x[0]))
+    pts[:2] = sorted(pts[:2], key=lambda x: x[0])
+    pts[2:] = sorted(pts[2:], key=lambda x: -x[0])
+    pts = np.array(pts)
+    return pts
+
+
+if __name__ == '__main__':
+    box = np.array([382, 1080, 443, 999, 423, 1014, 362, 1095]).reshape(-1, 2)
+    # box = np.array([0, 4, 2, 2, 0, 8, 4, 4]).reshape(-1, 2)
+    # box = np.array([0, 0, 2, 2, 0, 4, 4, 4]).reshape(-1, 2)
+    from scipy.spatial import ConvexHull
+
+    # print(order_points_colckwise(box))
+    print(order_points_colckwise_list(box))

@@ -37,6 +37,7 @@ class Trainer(BaseTrainer):
         train_loss = 0.
         running_metric_text = runningScore(2)
         running_metric_kernel = runningScore(2)
+        lr = self.optimizer.param_groups[0]['lr']
         for i, (images, labels, training_masks) in enumerate(self.train_loader):
             if i >= self.train_loader_len:
                 break
@@ -72,6 +73,15 @@ class Trainer(BaseTrainer):
             iou_text = score_text['Mean IoU']
             iou_kernel = score_kernel['Mean IoU']
 
+            if (i + 1) % self.display_interval == 0:
+                batch_time = time.time() - batch_start
+                self.logger.info(
+                    '[{}/{}], [{}/{}], global_step: {}, Speed: {:.1f} samples/sec, acc: {:.4f}, iou_text: {:.4f}, iou_kernel: {:.4f}, loss_all: {:.4f}, loss_tex: {:.4f}, loss_ker: {:.4f}, loss_agg: {:.4f}, loss_dis: {:.4f}, lr:{:.6}, time:{:.2f}'.format(
+                        epoch, self.epochs, i + 1, self.train_loader_len, self.global_step,
+                                            self.display_interval * cur_batch_size / batch_time, acc, iou_text,
+                        iou_kernel, loss_all, loss_tex, loss_ker, loss_agg, loss_dis, lr, batch_time))
+                batch_start = time.time()
+
             if self.tensorboard_enable:
                 # write tensorboard
                 self.writer.add_scalar('TRAIN/LOSS/loss_all', loss_all, self.global_step)
@@ -83,35 +93,25 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar('TRAIN/ACC_IOU/iou_text', iou_text, self.global_step)
                 self.writer.add_scalar('TRAIN/ACC_IOU/iou_kernel', iou_kernel, self.global_step)
                 self.writer.add_scalar('TRAIN/lr', lr, self.global_step)
-
-            if (i + 1) % self.display_interval == 0:
-                batch_time = time.time() - batch_start
-                self.logger.info(
-                    '[{}/{}], [{}/{}], global_step: {}, Speed: {:.1f} samples/sec, acc: {:.4f}, iou_text: {:.4f}, iou_kernel: {:.4f}, loss_all: {:.4f}, loss_tex: {:.4f}, loss_ker: {:.4f}, loss_agg: {:.4f}, loss_dis: {:.4f}, lr:{:.6}, time:{:.2f}'.format(
-                        epoch, self.epochs, i + 1, self.train_loader_len, self.global_step,
-                                            self.display_interval * cur_batch_size / batch_time, acc, iou_text,
-                        iou_kernel, loss_all, loss_tex, loss_ker, loss_agg, loss_dis, lr, batch_time))
-                batch_start = time.time()
-
-            if i % self.show_images_interval == 0:
-                # show images on tensorboard
-                self.writer.add_images('TRAIN/imgs', images, self.global_step)
-                # text kernel and training_masks
-                gt_texts, gt_kernels = labels[:, 0, :, :], labels[:, 1, :, :]
-                gt_texts[gt_texts <= 0.5] = 0
-                gt_texts[gt_texts > 0.5] = 1
-                gt_kernels[gt_kernels <= 0.5] = 0
-                gt_kernels[gt_kernels > 0.5] = 1
-                show_label = torch.cat([gt_texts, gt_kernels, training_masks.float()])
-                show_label = vutils.make_grid(show_label.unsqueeze(1), nrow=cur_batch_size, normalize=False, padding=20,
-                                              pad_value=1)
-                self.writer.add_image('TRAIN/gt', show_label, self.global_step)
-                # model output
-                preds[:, :2, :, :] = torch.sigmoid(preds[:, :2, :, :])
-                show_pred = torch.cat([preds[:, 0, :, :], preds[:, 1, :, :]])
-                show_pred = vutils.make_grid(show_pred.unsqueeze(1), nrow=cur_batch_size, normalize=False, padding=20,
-                                             pad_value=1)
-                self.writer.add_image('TRAIN/preds', show_pred, self.global_step)
+                if i % self.show_images_interval == 0:
+                    # show images on tensorboard
+                    self.writer.add_images('TRAIN/imgs', images, self.global_step)
+                    # text kernel and training_masks
+                    gt_texts, gt_kernels = labels[:, 0, :, :], labels[:, 1, :, :]
+                    gt_texts[gt_texts <= 0.5] = 0
+                    gt_texts[gt_texts > 0.5] = 1
+                    gt_kernels[gt_kernels <= 0.5] = 0
+                    gt_kernels[gt_kernels > 0.5] = 1
+                    show_label = torch.cat([gt_texts, gt_kernels, training_masks.float()])
+                    show_label = vutils.make_grid(show_label.unsqueeze(1), nrow=cur_batch_size, normalize=False, padding=20,
+                                                  pad_value=1)
+                    self.writer.add_image('TRAIN/gt', show_label, self.global_step)
+                    # model output
+                    preds[:, :2, :, :] = torch.sigmoid(preds[:, :2, :, :])
+                    show_pred = torch.cat([preds[:, 0, :, :], preds[:, 1, :, :]])
+                    show_pred = vutils.make_grid(show_pred.unsqueeze(1), nrow=cur_batch_size, normalize=False, padding=20,
+                                                 pad_value=1)
+                    self.writer.add_image('TRAIN/preds', show_pred, self.global_step)
 
         return {'train_loss': train_loss / self.train_loader_len, 'lr': lr, 'time': time.time() - epoch_start,
                 'epoch': epoch}

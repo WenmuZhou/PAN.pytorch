@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from data_loader.data_utils import image_label
+from utils import order_points_colckwise
 
 
 class ImageDataset(Dataset):
@@ -51,14 +52,14 @@ class ImageDataset(Dataset):
             for line in f.readlines():
                 params = line.strip().strip('\ufeff').strip('\xef\xbb\xbf').split(',')
                 try:
-                    label = params[8]
-                    if label == '*' or label == '###':
-                        text_tags.append(False)
-                    else:
-                        text_tags.append(True)
-                    # if label == '*' or label == '###':
-                    x1, y1, x2, y2, x3, y3, x4, y4 = list(map(float, params[:8]))
-                    boxes.append([[x1, y1], [x2, y2], [x3, y3], [x4, y4]])
+                    box = order_points_colckwise(np.array(list(map(float, params[:8]))).reshape(-2, 1))
+                    if cv2.arcLength(box, True) > 0:
+                        boxes.append(box)
+                        label = params[8]
+                        if label == '*' or label == '###':
+                            text_tags.append(False)
+                        else:
+                            text_tags.append(True)
                 except:
                     print('load label failed on {}'.format(label_path))
         return np.array(boxes, dtype=np.float32), np.array(text_tags, dtype=np.bool)
@@ -135,10 +136,9 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
     from torchvision import transforms
 
-
     train_data = ImageDataset(
         data_list=[
-            (r'/data1/zj/ocr/icdar2015/train/img/img_713.jpg','/data1/zj/ocr/icdar2015/train/gt/gt_img_713.txt')],
+            (r'/data1/zj/ocr/icdar2015/train/img/img_713.jpg', '/data1/zj/ocr/icdar2015/train/gt/gt_img_713.txt')],
         input_size=640,
         img_channel=3,
         shrink_ratio=0.5,

@@ -46,14 +46,17 @@ def generate_rbox(im_size, text_polys, text_tags,training_mask, shrink_ratio):
     h, w = im_size
     score_map = np.zeros((h, w), dtype=np.uint8)
     for i, (poly, tag) in enumerate(zip(text_polys, text_tags)):
-        poly = poly.astype(np.int)
-        d_i = cv2.contourArea(poly) * (1 - shrink_ratio * shrink_ratio) / cv2.arcLength(poly, True)
-        pco = pyclipper.PyclipperOffset()
-        pco.AddPath(poly, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
-        shrinked_poly = np.array(pco.Execute(-d_i))
-        cv2.fillPoly(score_map, shrinked_poly, i + 1)
-        if not tag:
-            cv2.fillPoly(training_mask, shrinked_poly, 0)
+        try:
+            poly = poly.astype(np.int)
+            d_i = cv2.contourArea(poly) * (1 - shrink_ratio * shrink_ratio) / cv2.arcLength(poly, True)
+            pco = pyclipper.PyclipperOffset()
+            pco.AddPath(poly, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+            shrinked_poly = np.array(pco.Execute(-d_i))
+            cv2.fillPoly(score_map, shrinked_poly, i + 1)
+            if not tag:
+                cv2.fillPoly(training_mask, shrinked_poly, 0)
+        except:
+            print(poly)
     return score_map, training_mask
 
 

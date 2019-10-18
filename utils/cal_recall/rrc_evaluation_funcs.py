@@ -8,8 +8,8 @@ import sys
 import os
 import codecs
 import traceback
-import importlib
-from io import StringIO
+import numpy as np
+from utils import order_points_colckwise
 
 def print_help():
     sys.stdout.write('Usage: python %s.py -g=<gtFile> -s=<submFile> [-o=<outputFolder> -p=<jsonParams>]' %sys.argv[0])
@@ -222,7 +222,8 @@ def get_tl_line_values(line,LTRB=True,withTranscription=False,withConfidence=Fal
                 raise Exception("Format incorrect. Should be: x1,y1,x2,y2,x3,y3,x4,y4")
             
         points = [ float(m.group(i)) for i in range(1, (numPoints+1) ) ]
-        
+
+        points = order_points_colckwise(np.array(points).reshape(-1,2)).reshape(-1)
         validate_clockwise_points(points)
         
         if (imWidth>0 and imHeight>0):
