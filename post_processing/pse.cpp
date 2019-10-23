@@ -15,14 +15,6 @@
 
 namespace py = pybind11;
 
-label_values = []
-for label_idx in range(1, label_num):
-    if np.sum(label == label_idx) < min_area:
-        label[label == label_idx] = 0
-        continue
-    label_values.append(label_idx)
-
-
 
 namespace pan{
     py::array_t<uint8_t> pse(
@@ -53,7 +45,7 @@ namespace pan{
 
         std::queue<std::tuple<int, int, int32_t>> q;
         // 计算各个kernel的similarity_vectors
-        float point_vector[label_num][5] = {0};
+        float kernel_vector[label_num][5] = {0};
 
         // 文本像素入队列
         for (int i = 0; i<h; i++)
@@ -66,11 +58,11 @@ namespace pan{
                 int32_t label = p_label_map[j];
                 if (label>0)
                 {
-                    kernel_vector[0] += similarity_vectors[k];
-                    kernel_vector[1] += similarity_vectors[k+1];
-                    kernel_vector[2] += similarity_vectors[k+2];
-                    kernel_vector[3] += similarity_vectors[k+3];
-                    kernel_vector[4] += 1;
+                    kernel_vector[label][0] += p_similarity_vectors[k];
+                    kernel_vector[label][1] += p_similarity_vectors[k+1];
+                    kernel_vector[label][2] += p_similarity_vectors[k+2];
+                    kernel_vector[label][3] += p_similarity_vectors[k+3];
+                    kernel_vector[label][4] += 1;
                     q.push(std::make_tuple(i, j, label));
                 }
                 p_res[j] = label;
@@ -79,7 +71,6 @@ namespace pan{
 
         for(int i=0;i<label_num;i++)
         {
-            int len = 4
             for (int j=0;j<4;j++)
             {
                 kernel_vector[i][j] /= kernel_vector[i][4];
@@ -109,7 +100,7 @@ namespace pan{
                 // 计算距离
                 float dis = 0;
                 auto p_similarity_vectors = ptr_similarity_vectors + tmpy * w*4;
-                for(size_t i=0;i<4-1;i++)
+                for(size_t i=0;i<4;i++)
                 {
                     dis += pow(kernel_cv[i] - p_similarity_vectors[tmpx*4 + i],2);
                 }
@@ -136,7 +127,6 @@ namespace pan{
         int w = pbuf_label_map.shape[1];
 
         std::map<int,std::vector<float>> point_dict;
-        std::vector<int>::iterator vec_iter;
         std::vector<std::vector<float>> point_vector;
         for(int i=0;i<label_num;i++)
         {
@@ -159,8 +149,8 @@ namespace pan{
                 float score = p_score_map[j];
                 point_vector[label][0] += score;
                 point_vector[label][1] += 1;
-                point.push_back(j);
-                point.push_back(i);
+                point_vector[label].push_back(j);
+                point_vector[label].push_back(i);
             }
         }
         for(int i=0;i<label_num;i++)
@@ -182,7 +172,7 @@ namespace pan{
         int h = pbuf_label_map.shape[0];
         int w = pbuf_label_map.shape[1];
 
-        std::vector<std::vector<int> point_vector;
+        std::vector<int> point_vector;
         for(int i=0;i<label_num;i++)
         {
             point_vector.push_back(0);
@@ -205,7 +195,7 @@ namespace pan{
 }
 
 PYBIND11_MODULE(pse, m){
-    m.def("pse_cpp", &pan::pse, " re-implementation pse algorithm(cpp)", py::arg("text"), py::arg("similarity_vectors"), py::arg("label_map"), py::arg("dis_threshold")=0.8);
+    m.def("pse_cpp", &pan::pse, " re-implementation pse algorithm(cpp)", py::arg("text"), py::arg("similarity_vectors"), py::arg("label_map"), py::arg("label_num"), py::arg("dis_threshold")=0.8);
     m.def("get_points", &pan::get_points, " re-implementation pse algorithm(cpp)", py::arg("label_map"), py::arg("score_map"), py::arg("label_num"));
     m.def("get_num", &pan::get_num, " re-implementation pse algorithm(cpp)", py::arg("label_map"), py::arg("label_num"));
 }
