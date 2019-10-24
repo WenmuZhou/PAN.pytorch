@@ -3,10 +3,11 @@
 ![](imgs/paper/PAN.jpg)
 
 ## Requirements
-* pytorch 1.1
-* torchvision 0.3
+* pytorch 1.1+
+* torchvision 0.3+
 * pyclipper
 * opencv3
+* gcc 4.9+
 
 
 ## Data Preparation
