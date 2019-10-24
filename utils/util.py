@@ -108,7 +108,7 @@ def cal_kernel_score(kernel, gt_kernel, gt_texts, training_masks, running_metric
     return score_kernel
 
 
-def order_points_colckwise(pts):
+def order_points_clockwise(pts):
     rect = np.zeros((4, 2), dtype="float32")
     s = pts.sum(axis=1)
     rect[0] = pts[np.argmin(s)]
@@ -119,7 +119,7 @@ def order_points_colckwise(pts):
     return rect
 
 
-def order_points_colckwise_list(pts):
+def order_points_clockwise_list(pts):
     pts = pts.tolist()
     pts.sort(key=lambda x: (x[1], x[0]))
     pts[:2] = sorted(pts[:2], key=lambda x: x[0])
@@ -135,4 +135,4 @@ if __name__ == '__main__':
     from scipy.spatial import ConvexHull
 
     # print(order_points_colckwise(box))
-    print(order_points_colckwise_list(box))
+    print(order_points_clockwise_list(box))

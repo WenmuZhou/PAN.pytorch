@@ -61,10 +61,10 @@ if __name__ == '__main__':
         'fpem_repeat': 4,  # fpem模块重复的次数
         'pretrained': False,  # backbone 是否使用imagesnet的预训练模型
         'result_num':7,
-        'segmentation_head': 'FPEM_FFM'  # 分割头，FPN or FPEM
+        'segmentation_head': 'FPEM_FFM'  # 分割头，FPN or FPEM_FFM
     }
     model = Model(model_config=model_config).to(device)
     y = model(x)
     print(y.shape)
-    print(model)
+    # print(model)
     # torch.save(model.state_dict(), 'PAN.pth')

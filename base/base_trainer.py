@@ -20,7 +20,7 @@ class BaseTrainer:
         self.save_dir = os.path.join(config['trainer']['output_dir'], config['name'])
         self.checkpoint_dir = os.path.join(self.save_dir, 'checkpoint')
 
-        if config['trainer']['resume']['restart_training']:
+        if config['trainer']['resume_checkpoint'] == '' and config['trainer']['finetune_checkpoint'] == '':
             shutil.rmtree(self.save_dir, ignore_errors=True)
         if not os.path.exists(self.checkpoint_dir):
             os.makedirs(self.checkpoint_dir)
@@ -42,7 +42,7 @@ class BaseTrainer:
         self.logger = setup_logger(os.path.join(self.save_dir, 'train_log'))
         self.logger.info(pformat(self.config))
 
-        # device set
+        # device
         torch.manual_seed(self.config['trainer']['seed'])  # 为CPU设置随机种子
         if len(self.config['trainer']['gpus']) > 0 and torch.cuda.is_available():
             self.with_cuda = True
@@ -62,8 +62,10 @@ class BaseTrainer:
 
         self.optimizer = self._initialize('optimizer', torch.optim, model.parameters())
 
-        if self.config['trainer']['resume']['checkpoint'] != '':
-            self._resume_checkpoint(self.config['trainer']['resume']['checkpoint'])
+        if self.config['trainer']['resume_checkpoint'] != '':
+            self._laod_checkpoint(self.config['trainer']['resume_checkpoint'], resume=True)
+        elif self.config['trainer']['finetune_checkpoint'] != '':
+            self._laod_checkpoint(self.config['trainer']['finetune_checkpoint'], resume=False)
         else:
             if weights_init is not None:
                 model.apply(weights_init)
@@ -171,15 +173,15 @@ class BaseTrainer:
         else:
             self.logger.info("Saving checkpoint: {}".format(filename))
 
-    def _resume_checkpoint(self, resume_path):
+    def _laod_checkpoint(self, checkpoint_path, resume):
         """
         Resume from saved checkpoints
-        :param resume_path: Checkpoint path to be resumed
+        :param checkpoint_path: Checkpoint path to be resumed
         """
-        self.logger.info("Loading checkpoint: {} ...".format(resume_path))
-        checkpoint = torch.load(resume_path)
+        self.logger.info("Loading checkpoint: {} ...".format(checkpoint_path))
+        checkpoint = torch.load(checkpoint_path)
         self.model.load_state_dict(checkpoint['state_dict'])
-        if not self.config['trainer']['resume']['restart_training']:
+        if resume:
             self.global_step = checkpoint['global_step']
             self.start_epoch = checkpoint['epoch'] + 1
             self.config['lr_scheduler']['args']['last_epoch'] = self.start_epoch
@@ -192,8 +194,9 @@ class BaseTrainer:
                     for k, v in state.items():
                         if isinstance(v, torch.Tensor):
                             state[k] = v.to(self.device)
-        # self.config = checkpoint['config']
-        self.logger.info("Checkpoint '{}' (epoch {}) loaded".format(resume_path, self.start_epoch))
+            self.logger.info("resume from checkpoint {} (epoch {})".format(checkpoint_path, self.start_epoch))
+        else:
+            self.logger.info("finetune from checkpoint {}".format(checkpoint_path))
 
     def _initialize(self, name, module, *args, **kwargs):
         module_name = self.config[name]['type']

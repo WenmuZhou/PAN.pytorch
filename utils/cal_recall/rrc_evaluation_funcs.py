@@ -9,7 +9,7 @@ import os
 import codecs
 import traceback
 import numpy as np
-from utils import order_points_colckwise
+from utils import order_points_clockwise
 
 def print_help():
     sys.stdout.write('Usage: python %s.py -g=<gtFile> -s=<submFile> [-o=<outputFolder> -p=<jsonParams>]' %sys.argv[0])
@@ -223,7 +223,7 @@ def get_tl_line_values(line,LTRB=True,withTranscription=False,withConfidence=Fal
             
         points = [ float(m.group(i)) for i in range(1, (numPoints+1) ) ]
 
-        points = order_points_colckwise(np.array(points).reshape(-1,2)).reshape(-1)
+        points = order_points_clockwise(np.array(points).reshape(-1, 2)).reshape(-1)
         validate_clockwise_points(points)
         
         if (imWidth>0 and imHeight>0):

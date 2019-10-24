@@ -41,9 +41,9 @@ def main(model_path, img_folder, save_path, gpu_id):
 
 
 if __name__ == '__main__':
-    os.environ['CUDA_VISIBLE_DEVICES'] = str('2')
+    os.environ['CUDA_VISIBLE_DEVICES'] = str('0')
     scale = 4
-    model_path = 'output/PAN_pred_mask_resnet50/checkpoint/model_best.pth'
+    model_path = 'output/PAN_resnet18_FPEM_FFM/checkpoint/model_best.pth'
     img_path = '/data2/dataset/ICD15/test/img'
     gt_path = '/data2/dataset/ICD15/test/gt'
     save_path = model_path.replace('checkpoint/model_best.pt', 'result/')

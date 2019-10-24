@@ -25,7 +25,7 @@ def decode(preds, scale=1, threshold=0.7311, min_area=5):
     :param threshold: sigmoid的阈值
     :return: 最后的输出图和文本框
     """
-    from .pse import pse_cpp, get_points, get_sum
+    from .pse import pse_cpp, get_points, get_num
     preds[:2, :, :] = torch.sigmoid(preds[:2, :, :])
     preds = preds.detach().cpu().numpy()
     score = preds[0].astype(np.float32)
@@ -35,7 +35,7 @@ def decode(preds, scale=1, threshold=0.7311, min_area=5):
 
     label_num, label = cv2.connectedComponents(kernel.astype(np.uint8), connectivity=4)
     label_values = []
-    label_sum = get_sum(label, label_num)
+    label_sum = get_num(label, label_num)
     for label_idx in range(1, label_num):
         if label_sum[label_idx] < min_area:
             continue
@@ -43,34 +43,20 @@ def decode(preds, scale=1, threshold=0.7311, min_area=5):
 
     pred = pse_cpp(text.astype(np.uint8), similarity_vectors, label, label_num, 0.8)
     pred = pred.reshape(text.shape)
-    bbox_list = []
-    for label_value in label_values:
-        points = np.array(np.where(pred == label_value)).transpose((1, 0))[:, ::-1]
-
-        if points.shape[0] < 100 / (scale * scale):
-            continue
-
-        score_i = np.mean(score[pred == label_value])
-        if score_i < 0.1:
-            continue
-
-        rect = cv2.minAreaRect(points)
-        bbox = cv2.boxPoints(rect)
-        bbox_list.append([bbox[1], bbox[2], bbox[3], bbox[0]])
 
     bbox_list = []
     label_points = get_points(pred, score, label_num)
-    for label_value, label_point in label_points.item():
+    for label_value, label_point in label_points.items():
         if label_value not in label_values:
             continue
         score_i = label_point[0]
         label_point = label_point[2:]
-        points = np.array(label_point).reshape(-1, 2)
+        points = np.array(label_point, dtype=int).reshape(-1, 2)
 
         if points.shape[0] < 100 / (scale * scale):
             continue
 
-        if score_i < 0.1:
+        if score_i < 0.93:
             continue
 
         rect = cv2.minAreaRect(points)

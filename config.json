@@ -77,10 +77,8 @@
         "epochs": 600,
         "display_interval": 10,
         "show_images_interval": 50,
-        "resume": {
-            "restart_training": true,
-            "checkpoint": ""
-        },
+        "resume_checkpoint": "",
+        "finetune_checkpoint": "",
         "output_dir": "output",
         "tensorboard": true
     }

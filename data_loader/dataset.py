@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 from data_loader.data_utils import image_label
-from utils import order_points_colckwise
+from utils import order_points_clockwise
 
 
 class ImageDataset(Dataset):
@@ -52,7 +52,7 @@ class ImageDataset(Dataset):
             for line in f.readlines():
                 params = line.strip().strip('\ufeff').strip('\xef\xbb\xbf').split(',')
                 try:
-                    box = order_points_colckwise(np.array(list(map(float, params[:8]))).reshape(-2, 1))
+                    box = order_points_clockwise(np.array(list(map(float, params[:8]))).reshape(-1, 2))
                     if cv2.arcLength(box, True) > 0:
                         boxes.append(box)
                         label = params[8]
