@@ -28,7 +28,6 @@
             "loader": {
                 "validation_split": 0.1,
                 "train_batch_size": 16,
-                "val_batch_size": 4,
                 "shuffle": true,
                 "pin_memory": false,
                 "num_workers": 6

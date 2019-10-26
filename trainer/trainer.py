@@ -11,7 +11,7 @@ from tqdm import tqdm
 import torch
 import torchvision.utils as vutils
 from torchvision import transforms
-from post_processing import decode_np as decode
+from post_processing import decode
 from utils import PolynomialLR, runningScore, cal_text_score, cal_kernel_score, cal_recall_precison_f1
 
 from base import BaseTrainer

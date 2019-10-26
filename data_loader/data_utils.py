@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2019/8/23 21:53
 # @Author  : zhoujun
-
+import math
 import random
 import pyclipper
 import numpy as np
@@ -33,6 +33,25 @@ def check_and_validate_polys(polys, xxx_todo_changeme):
         validated_polys.append(poly)
     return np.array(validated_polys)
 
+def unshrink_offset(poly,ratio):
+    area = cv2.contourArea(poly)
+    peri = cv2.arcLength(poly, True)
+    a = 8
+    b = peri - 4
+    c = 1-0.5 * peri - area/ratio
+    return quadratic(a,b,c)
+
+def quadratic(a, b, c):
+    if (b * b - 4 * a * c) < 0:
+        return 'None'
+    Delte = math.sqrt(b * b - 4 * a * c)
+    if Delte > 0:
+        x = (- b + Delte) / (2 * a)
+        y = (- b - Delte) / (2 * a)
+        return x, y
+    else:
+        x = (- b) / (2 * a)
+        return x
 
 def generate_rbox(im_size, text_polys, text_tags,training_mask, shrink_ratio):
     """
@@ -48,7 +67,8 @@ def generate_rbox(im_size, text_polys, text_tags,training_mask, shrink_ratio):
     for i, (poly, tag) in enumerate(zip(text_polys, text_tags)):
         try:
             poly = poly.astype(np.int)
-            d_i = cv2.contourArea(poly) * (1 - shrink_ratio * shrink_ratio) / cv2.arcLength(poly, True)
+            # d_i = cv2.contourArea(poly) * (1 - shrink_ratio * shrink_ratio) / cv2.arcLength(poly, True)
+            d_i = cv2.contourArea(poly) * (1 - shrink_ratio) / cv2.arcLength(poly, True) + 0.5
             pco = pyclipper.PyclipperOffset()
             pco.AddPath(poly, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
             shrinked_poly = np.array(pco.Execute(-d_i))
@@ -107,3 +127,14 @@ def image_label(im: np.ndarray, text_polys: np.ndarray, text_tags: list, input_s
     score_maps = np.array(score_maps, dtype=np.float32)
     imgs = data_aug.random_crop([im, score_maps.transpose((1, 2, 0)), training_mask], (input_size, input_size))
     return imgs[0], imgs[1].transpose((2, 0, 1)), imgs[2]  # im,score_maps,training_mask#
+
+if __name__ == '__main__':
+    poly = np.array([377,117,463,117,465,130,378,130]).reshape(-1,2)
+    shrink_ratio = 0.5
+    d_i = cv2.contourArea(poly) * (1 - shrink_ratio) / cv2.arcLength(poly, True) + 0.5
+    pco = pyclipper.PyclipperOffset()
+    pco.AddPath(poly, pyclipper.JT_ROUND, pyclipper.ET_CLOSEDPOLYGON)
+    shrinked_poly = np.array(pco.Execute(-d_i))
+    print(d_i)
+    print(cv2.contourArea(shrinked_poly.astype(int)) / cv2.contourArea(poly))
+    print(unshrink_offset(shrinked_poly,shrink_ratio))
