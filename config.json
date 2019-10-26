@@ -18,9 +18,7 @@
                     0.5,
                     0.5
                 ],
-                "val_data_path": [
-                    "path/to/test/"
-                ],
+                "val_data_path": "path/to/test/",
                 "input_size": 640,
                 "img_channel": 3,
                 "shrink_ratio": 0.5
