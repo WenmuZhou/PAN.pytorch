@@ -181,7 +181,7 @@ class Trainer(BaseTrainer):
                                                                                           hmean)
             if hmean > self.metrics['hmean']:
                 save_best = True
-                self.metrics['train_loss'] = self.metrics['train_loss']
+                self.metrics['train_loss'] = self.epoch_result['train_loss']
                 self.metrics['hmean'] = hmean
                 self.metrics['precision'] = precision
                 self.metrics['recall'] = recall
