@@ -73,7 +73,9 @@ only train on ICDAR2015 dataset
 TBD
 
 ### todo
-[ ] MobileNet and ShuffleNet backnone
+- [ ] MobileNet backbone
+
+- [x] ShuffleNet backbone
 ### reference
 1. https://arxiv.org/pdf/1908.05900.pdf
 2. https://github.com/WenmuZhou/PSENet.pytorch
