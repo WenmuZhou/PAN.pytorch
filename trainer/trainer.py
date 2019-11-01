@@ -103,13 +103,15 @@ class Trainer(BaseTrainer):
                     gt_kernels[gt_kernels <= 0.5] = 0
                     gt_kernels[gt_kernels > 0.5] = 1
                     show_label = torch.cat([gt_texts, gt_kernels, training_masks.float()])
-                    show_label = vutils.make_grid(show_label.unsqueeze(1), nrow=cur_batch_size, normalize=False, padding=20,
+                    show_label = vutils.make_grid(show_label.unsqueeze(1), nrow=cur_batch_size, normalize=False,
+                                                  padding=20,
                                                   pad_value=1)
                     self.writer.add_image('TRAIN/gt', show_label, self.global_step)
                     # model output
                     preds[:, :2, :, :] = torch.sigmoid(preds[:, :2, :, :])
                     show_pred = torch.cat([preds[:, 0, :, :], preds[:, 1, :, :]])
-                    show_pred = vutils.make_grid(show_pred.unsqueeze(1), nrow=cur_batch_size, normalize=False, padding=20,
+                    show_pred = vutils.make_grid(show_pred.unsqueeze(1), nrow=cur_batch_size, normalize=False,
+                                                 padding=20,
                                                  pad_value=1)
                     self.writer.add_image('TRAIN/preds', show_pred, self.global_step)
 
@@ -162,8 +164,7 @@ class Trainer(BaseTrainer):
             self.epoch_result['epoch'], self.epochs, self.epoch_result['train_loss'], self.epoch_result['time'],
             self.epoch_result['lr']))
 
-        save_best = False
-        try:
+        if self.config['trainer']['metrics'] == 'hmean':  # 使用f1作为最优模型指标
             recall, precision, hmean = self._eval()
 
             if self.tensorboard_enable:
@@ -172,30 +173,22 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar('EVAL/hmean', hmean, self.global_step)
             self.logger.info('test: recall: {:.6f}, precision: {:.6f}, f1: {:.6f}'.format(recall, precision, hmean))
 
-            net_save_path = '{}/PSENet_{}_loss{:.6f}_r{:.6f}_p{:.6f}_f1{:.6f}.pth'.format(self.checkpoint_dir,
-                                                                                          self.epoch_result['epoch'],
-                                                                                          self.epoch_result[
-                                                                                              'train_loss'],
-                                                                                          recall,
-                                                                                          precision,
-                                                                                          hmean)
+            net_save_path = '{}/PANNet_best_hmean.pth'.format(self.checkpoint_dir)
             if hmean > self.metrics['hmean']:
-                save_best = True
+                save_best = False
                 self.metrics['train_loss'] = self.epoch_result['train_loss']
                 self.metrics['hmean'] = hmean
                 self.metrics['precision'] = precision
                 self.metrics['recall'] = recall
                 self.metrics['best_model'] = net_save_path
-        except:
-            self.logger.error(traceback.format_exc())
-            net_save_path = '{}/CRNN_{}_loss{:.6f}.pth'.format(self.checkpoint_dir,
-                                                               self.epoch_result['epoch'],
-                                                               self.epoch_result['train_loss'])
+                self._save_checkpoint(self.epoch_result['epoch'], net_save_path, save_best)
+        else:
+            net_save_path = '{}/PANNet_best_loss.pth'.format(self.checkpoint_dir)
             if self.epoch_result['train_loss'] < self.metrics['train_loss']:
-                save_best = True
+                save_best = False
                 self.metrics['train_loss'] = self.epoch_result['train_loss']
                 self.metrics['best_model'] = net_save_path
-        self._save_checkpoint(self.epoch_result['epoch'], net_save_path, save_best)
+                self._save_checkpoint(self.epoch_result['epoch'], net_save_path, save_best)
 
     def _on_train_finish(self):
         for k, v in self.metrics.items():

@@ -13,7 +13,8 @@ backbone_dict = {'resnet18': {'models': resnet18, 'out': [64, 128, 256, 512]},
                  'resnet101': {'models': resnet101, 'out': [256, 512, 1024, 2048]},
                  'resnet152': {'models': resnet152, 'out': [256, 512, 1024, 2048]},
                  'resnext50_32x4d': {'models': resnext50_32x4d, 'out': [256, 512, 1024, 2048]},
-                 'resnext101_32x8d': {'models': resnext101_32x8d, 'out': [256, 512, 1024, 2048]}
+                 'resnext101_32x8d': {'models': resnext101_32x8d, 'out': [256, 512, 1024, 2048]},
+                 'shufflenetv2': {'models': shufflenet_v2_x1_0, 'out': [24, 116, 232, 464]}
                  }
 
 segmentation_head_dict = {'FPN': FPN, 'FPEM_FFM': FPEM_FFM}
@@ -57,10 +58,10 @@ if __name__ == '__main__':
     x = torch.zeros(1, 3, 640, 640).to(device)
 
     model_config = {
-        'backbone': 'resnet18',
+        'backbone': 'shufflenetv2',
         'fpem_repeat': 4,  # fpem模块重复的次数
-        'pretrained': False,  # backbone 是否使用imagesnet的预训练模型
-        'result_num':7,
+        'pretrained': True,  # backbone 是否使用imagesnet的预训练模型
+        'result_num': 7,
         'segmentation_head': 'FPEM_FFM'  # 分割头，FPN or FPEM_FFM
     }
     model = Model(model_config=model_config).to(device)
