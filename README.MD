@@ -58,10 +58,12 @@ The project is still under development.
 only train on ICDAR2015 dataset
 
 | Method                   | image size (short size) |learning rate | Precision (%) | Recall (%) | F-measure (%) | FPS |
-|--------------------------|-------|--------|--------|------------|---------------|-----|
+|:--------------------------:|:-------:|:--------:|:--------:|:------------:|:---------------:|:-----:|
 | paper(resnet18)  | 736 |x | x | x | 80.4 | 26.1 |
+| my (ShuffleNetV2+FPEM_FFM+pse扩张)  |736 |1e-3| 81.72 | 66.73 | 73.47 | 24.71 (P100)|
 | my (resnet18+FPEM_FFM+pse扩张)  |736 |1e-3| 84.93 | 74.09 | 79.14 | 21.31 (P100)|
 | my (resnet50+FPEM_FFM+pse扩张)  |736 |1e-3| 84.23 | 76.12 | 79.96 | 14.22 (P100)|
+| my (ShuffleNetV2+FPEM_FFM+pse扩张)  |736 |1e-4| 75.14 | 57.34 | 65.04 | 24.71 (P100)|
 | my (resnet18+FPEM_FFM+pse扩张)  |736 |1e-4| 83.89 | 69.23 | 75.86 | 21.31 (P100)|
 | my (resnet50+FPEM_FFM+pse扩张)  |736 |1e-4| 85.29 | 75.1 | 79.87 | 14.22 (P100)|
 | my (resnet18+FPN+pse扩张)  | 736 |1e-3|  76.50 | 74.70 | 75.59 | 14.47 (P100)|
