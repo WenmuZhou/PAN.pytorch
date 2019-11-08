@@ -163,6 +163,7 @@ class Trainer(BaseTrainer):
         self.logger.info('[{}/{}], train_loss: {:.4f}, time: {:.4f}, lr: {}'.format(
             self.epoch_result['epoch'], self.epochs, self.epoch_result['train_loss'], self.epoch_result['time'],
             self.epoch_result['lr']))
+        net_save_path = '{}/PANNet_latest.pth'.format(self.checkpoint_dir)
 
         save_best = False
         if self.config['trainer']['metrics'] == 'hmean':  # 使用f1作为最优模型指标
@@ -174,7 +175,6 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar('EVAL/hmean', hmean, self.global_step)
             self.logger.info('test: recall: {:.6f}, precision: {:.6f}, f1: {:.6f}'.format(recall, precision, hmean))
 
-            net_save_path = '{}/PANNet_current.pth'.format(self.checkpoint_dir)
             if hmean > self.metrics['hmean']:
                 save_best = True
                 self.metrics['train_loss'] = self.epoch_result['train_loss']
@@ -183,7 +183,6 @@ class Trainer(BaseTrainer):
                 self.metrics['recall'] = recall
                 self.metrics['best_model'] = net_save_path
         else:
-            net_save_path = '{}/PANNet_current.pth'.format(self.checkpoint_dir)
             if self.epoch_result['train_loss'] < self.metrics['train_loss']:
                 save_best = True
                 self.metrics['train_loss'] = self.epoch_result['train_loss']
