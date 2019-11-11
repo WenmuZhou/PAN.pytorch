@@ -20,13 +20,13 @@ class Pytorch_model:
         :param gpu_id: 在哪一块gpu上运行
         '''
         self.gpu_id = gpu_id
-        checkpoint = torch.load(model_path)
 
         if self.gpu_id is not None and isinstance(self.gpu_id, int) and torch.cuda.is_available():
             self.device = torch.device("cuda:%s" % self.gpu_id)
         else:
             self.device = torch.device("cpu")
         print('device:', self.device)
+        checkpoint = torch.load(model_path,map_location=self.device)
 
         config = checkpoint['config']
         config['arch']['args']['pretrained'] = False
@@ -57,10 +57,12 @@ class Pytorch_model:
 
         tensor = tensor.to(self.device)
         with torch.no_grad():
-            torch.cuda.synchronize(self.device)
+            if str(self.device).__contains__('cuda'):
+                torch.cuda.synchronize(self.device)
             start = time.time()
             preds = self.net(tensor)[0]
-            torch.cuda.synchronize(self.device)
+            if str(self.device).__contains__('cuda'):
+                torch.cuda.synchronize(self.device)
             preds, boxes_list = decode(preds)
             scale = (preds.shape[1] / w, preds.shape[0] / h)
             if len(boxes_list):

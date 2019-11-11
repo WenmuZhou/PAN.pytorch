@@ -9,6 +9,13 @@
 * opencv3
 * gcc 4.9+
 
+## Download
+
+PAN_resnet18_FPEM_FFM and PAN_resnet18_FPEM_FFM on icdar2015：
+
+the updated model(resnet18:78.8,shufflenetv2: 72.4) is not the best model
+
+[google drive](https://drive.google.com/drive/folders/1bKPQEEOJ5kgSSRMpnDB8HIRecnD_s4bR?usp=sharing)
 
 ## Data Preparation
 
@@ -72,7 +79,15 @@ only train on ICDAR2015 dataset
 | my (resnet50+FPN+pse扩张)  | 736 |1e-4|  78.96 | 76.27 | 77.59 | 10.67 (P100)|
 
 ### examples
-TBD
+![](imgs/example/img_2.jpg)
+
+![](imgs/example/img_10.jpg)
+
+![](imgs/example/img_29.jpg)
+
+![](imgs/example/img_75.jpg)
+
+![](imgs/example/img_91.jpg)
 
 ### todo
 - [ ] MobileNet backbone
