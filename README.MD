@@ -11,7 +11,7 @@
 
 ## Download
 
-PAN_resnet18_FPEM_FFM and PAN_resnet18_FPEM_FFM on icdar2015：
+`PAN_resnet18_FPEM_FFM` and `PAN_resnet18_FPEM_FFM` on icdar2015：
 
 the updated model(resnet18:78.8,shufflenetv2: 72.4,lr:le-3) is not the best model
 
