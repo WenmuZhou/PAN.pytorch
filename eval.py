@@ -43,7 +43,7 @@ def main(model_path, img_folder, save_path, gpu_id):
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = str('0')
-    model_path = r'output/PAN_resnet18_FPEM_FFM.pth'
+    model_path = r'output/PAN_shufflenetv2_FPEM_FFM.pth'
     img_path = r'/mnt/e/zj/dataset/icdar2015/test/img'
     gt_path = r'/mnt/e/zj/dataset/icdar2015/test/gt'
     save_path = './output/result'#model_path.replace('checkpoint/best_model.pth', 'result/')

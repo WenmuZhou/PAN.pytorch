@@ -13,7 +13,7 @@
 
 PAN_resnet18_FPEM_FFM and PAN_resnet18_FPEM_FFM on icdar2015：
 
-the updated model(resnet18:78.8,shufflenetv2: 72.4) is not the best model
+the updated model(resnet18:78.8,shufflenetv2: 72.4,lr:le-3) is not the best model
 
 [google drive](https://drive.google.com/drive/folders/1bKPQEEOJ5kgSSRMpnDB8HIRecnD_s4bR?usp=sharing)
 
